@@ -29,10 +29,10 @@ How to test the Mini ERP by hand and what success looks like. Feature agents fil
 | 3 | Nok (Sales) | Sales Orders → **New order** → Customer `lune` → pick Café Lune; Products → ARB-1KG, quantity **20**, **Add to order** → **Save as Draft** | Unit price **450.00 THB per kg** (not editable). Line amount **9,000.00 THB**. Opens order **SO-0001**, status **Draft**. Totals: Subtotal 9,000.00, VAT 7% 630.00, Total **9,630.00 THB** |
 | 4 | Nok (Sales) | On SO-0001 press the primary **Confirm order** button, read the dialog **"Confirm SO-0001?"** (it names Café Lune, "20 kg of ARB-1KG" and **Total 9,630.00 THB (incl. 7% VAT)**), then press **Confirm order** in the dialog | Toast "SO-0001 confirmed. Invoice INV-0001 issued.". Status badge **Confirmed**, a notice "Confirmed on ... This order is final and can't be changed", and a button **Open INV-0001** at the top. The lines have no edit controls and there is no Cancel order button |
 | 5 | Nok (Sales) | Products list | ARB-1KG on hand **150 kg** |
-| 6 | Nok (Sales) | On SO-0001 press **Open INV-0001** (address `/invoices/<id>`) | The Invoice screen arrives with ticket 10 (until then this link opens the Invoices page, "Coming soon"). Until then check on the order screen: Subtotal **9,000.00 THB**, VAT 7% **630.00 THB**, Total **9,630.00 THB**, and the Due Date in the database: invoice date + 30 days (see 1b step 4). After ticket 10: Invoice shows the same amounts, due date = invoice date + 30 days |
+| 6 | Nok (Sales) | On SO-0001 press **Open INV-0001** (address `/invoices/<id>`) | The Invoice screen opens: **INV-0001**, badge **Open**, Customer Café Lune with Tax ID **0105561000011**, line ARB-1KG 20 kg × 450.00 THB = 9,000.00 THB, Subtotal **9,000.00 THB**, VAT 7% **630.00 THB**, Total **9,630.00 THB**, Due date = Invoice date + 30 days, Balance **9,630.00 THB**, "No payments yet". Nok sees no **Record payment** button; the Sales Order is a link back to SO-0001 |
 | 7 | Anyone | Dashboard | Sales today (incl. VAT) **9,630.00 THB**. Open invoices **1 invoice · 9,630.00 THB**. Stock value **100,700.00 THB** |
-| 8 | Fon (Accountant) | Accounting → INV-0001 → record payment 9,630.00 | Status **Paid**. Balance **0.00 THB** |
-| 9 | Anyone | Dashboard | Open invoices **0 invoices · 0.00 THB** (dropped by 9,630.00) |
+| 8 | Fon (Accountant) | Menu → **Accounting** → INV-0001 → **Record payment**; the dialog already shows Amount **9630.00**, today's date and Bank transfer; press **Record payment** | Dialog closes, toast "Payment of 9,630.00 THB recorded. INV-0001 is Paid.". Accounting: **No open invoices**, Open Receivables **0.00 THB**. Invoices → INV-0001: badge **Paid**, Balance **0.00 THB**, the Payment listed (date, Bank transfer, 9,630.00 THB, by Fon) |
+| 9 | Anyone | Dashboard | Open invoices **0 invoices · 0.00 THB** (dropped by 9,630.00). Sales today is still **9,630.00 THB** |
 
 The numbers must agree on every screen. Any screen that disagrees is a bug.
 
@@ -83,6 +83,28 @@ Steps 3 to 6 of the golden path with the failure cases. **Reset the demo data fi
 
 Automated: `cd backend && uv run pytest -q tests/test_confirm_order.py` (the whole US-1 flow, short stock, roles, the DB function on its own, two people confirming at once) and `tests/test_dashboard.py::test_the_real_us1_flow_through_the_api_moves_all_four_dashboard_tiles`; frontend screen tests in `src/pages/sales-orders/screens.test.tsx` ("Confirm order (US-1)").
 
+### 1c. Invoices, Accounting and Payments (ticket 10)
+
+Steps 6 to 9 of the golden path with the failure cases. **Reset the demo data first** (`cd backend && uv run python -m scripts.reset_demo`), then as **Nok** create and confirm the 20 × ARB-1KG order for Café Lune (golden path steps 3-4), so `INV-0001` is Open for 9,630.00 THB. The steps run in the order shown.
+
+| Step | Do | Success looks like |
+| --- | --- | --- |
+| 1 | As **Nok** (Sales): menu → **Invoices** | One row **INV-0001**, Café Lune, Total **9,630.00 THB**, Balance **9,630.00 THB**, badge **Open** (no Overdue badge). Filter buttons All / Open / Overdue / Paid and a search box. Search `lune` and `INV-0001` both find it; `zzz` shows **"No invoices match 'zzz'"** |
+| 2 | Open **INV-0001** | As golden path step 6. Sales has **no** Record payment button and **no** Accounting item in the menu. Open `/accounting` by its address | **Access denied** page (US-3). Through the API (Sales token): `GET /api/accounting/receivables` and `POST /api/invoices/<id>/payments` both answer **403** |
+| 3 | As **Fon** (Accountant): menu → **Accounting** | Cards: **Open Receivables 9,630.00 THB** (1 open invoice) and **Overdue 0.00 THB**. One row INV-0001 with Due date, Total, Balance and a **Record payment** button. Fon sees the Invoices menu item and can open the Invoice too |
+| 4 | **Record payment** on INV-0001. Change the Amount to **5000**, pick **Cash**, note `Cash at the counter`, press **Record payment** | The line under the Amount first said "Balance after this payment: 4,630.00 THB." Toast "Payment of 5,000.00 THB recorded on INV-0001. Balance 4,630.00 THB.". Accounting: INV-0001 stays, Balance **4,630.00 THB**, Open Receivables **4,630.00 THB**. Dashboard: Open invoices **1 invoice · 4,630.00 THB** |
+| 5 | **Record payment** again and type **4631** | The dialog shows **"Payment is more than the balance of 4,630.00 THB"** and sends nothing. Through the API the same amount answers **409** with the same message and the Balance stays 4,630.00 |
+| 6 | Try **0**, **-5**, **abc**, **10.001** and an empty Amount | One short message each: "Amount must be greater than 0", "Amount must be a number", "Amount can have at most 2 decimal places", "Amount is required". Nothing is recorded |
+| 7 | Type **4630** (or leave the default, which is the Balance) and press **Record payment** | "Balance after this payment: 0.00 THB. The Invoice will be marked Paid." Toast "Payment of 4,630.00 THB recorded. INV-0001 is Paid." Accounting: **No open invoices**, Open Receivables **0.00 THB** |
+| 8 | Invoices → INV-0001 | Badge **Paid**, "Paid in full" notice, Balance **0.00 THB**, two Payments listed (5,000.00 Cash with the note, 4,630.00 Bank transfer) by Fon. No Record payment button. Invoice list: Balance **0.00 THB**, badge **Paid** |
+| 9 | Through the API as Fon: `POST /api/invoices/<id>/payments` with `{"amount":"1.00","method":"cash"}` on the Paid Invoice | **409** `"INV-0001 is already paid"` and no new Payment |
+| 10 | Dashboard (any role) | Open invoices **0 invoices · 0.00 THB**; Sales today still **9,630.00 THB** |
+| 11 | Overdue: no screen can make an old Invoice, so the automated tests cover it. To see it by hand, after a reset and a fresh confirmed order, run in the Supabase SQL editor `update invoices set invoice_date = invoice_date - 45, due_date = due_date - 45;`, reload Accounting, then run `scripts.reset_demo` again | The Invoice shows an **Overdue** badge next to Open and "Overdue by 15 days" (30 days of terms, 45 days old). The Overdue card shows its Balance in red. One due **today** is not Overdue; a Paid one never is. With several Open Invoices the most overdue is first |
+| 12 | Somchai (Admin): Accounting and Invoices both load; he can record a Payment too. Lek (Warehouse): no Invoices or Accounting menu items; `GET /api/invoices` and `GET /api/invoices/<id>` answer **403** | As listed |
+| 13 | Phone width (375 px) as Fon | Accounting cards stack, each Invoice is a card with its own **Record payment** button, the dialog fits the screen (Bank transfer / Cash / Cheque are three big buttons), no sideways scroll. Invoice detail: lines and Payments are cards, Record payment is a full-width button |
+
+Automated: `cd backend && uv run pytest -q tests/test_invoices.py tests/test_payments.py` (list, detail, Overdue, receivables, US-3 and US-4, partial and refused Payments, two people paying at once) and the frontend screen tests in `src/pages/invoices/` and `src/pages/accounting/`.
+
 ## 2. Business rules (bad input is rejected with a clear message)
 
 | Try | Success looks like |
@@ -98,6 +120,9 @@ Automated: `cd backend && uv run pytest -q tests/test_confirm_order.py` (the who
 | Stock-out larger than on hand | Rejected, and on hand unchanged |
 | Change ARB-1KG price to 500, then reopen INV-0001 | INV-0001 still shows 450.00 and 9,630.00 |
 | Deactivate a product or customer, then start a new order | It can't be picked. Old documents still show it |
+| Record a Payment of 4,631.00 on an Invoice with a Balance of 4,630.00 | **409** "Payment is more than the balance of 4,630.00 THB". The Balance does not change |
+| Record a Payment of 0, a negative amount or text | **422** "Amount must be greater than 0" / "Amount must be a number". Nothing recorded |
+| Record a Payment on a Paid Invoice | **409** "INV-0001 is already paid" |
 
 ### 2.1 Stock (ticket 07)
 
@@ -169,6 +194,17 @@ Every row must hold on the server, not just in the menu. `403` means "wrong Role
 | View invoices | ✓ | ✓ | 403 | ✓ |
 | Accounting screen, record payment | ✓ | 403 | 403 | ✓ |
 | Dashboard | ✓ | ✓ | ✓ | ✓ |
+
+Invoices and Payments (ticket 10), with `$TOKEN` of each person and `<id>` from `GET /api/invoices`:
+
+| Try | Command | Success looks like |
+| --- | --- | --- |
+| Sales lists Invoices | `curl -s -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/invoices` | **200**, `{"items":[...],"total":1,"page":1,"page_size":20}` with `balance`, `status` and `overdue` per row |
+| Warehouse lists Invoices | same, Lek's token | **403** `Your role (warehouse) is not allowed to do this.` (also on `/api/invoices/<id>`) |
+| Sales opens the receivables (US-3) | `curl -i -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/accounting/receivables` | **403** |
+| Accountant or Admin opens the receivables | same, Fon's or Somchai's token | **200**, `open_receivables` `"9630.00"` for the golden-path Invoice |
+| Sales records a Payment (US-3) | `curl -i -X POST http://127.0.0.1:8000/api/invoices/<id>/payments -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d '{"amount":"9630.00","method":"transfer"}'` | **403**, nothing recorded |
+| Accountant records the full Payment (US-4) | same, Fon's token | **201** and the Invoice with `"status":"paid"`, `"balance":"0.00"` |
 
 Error messages you should see in the API: `Your role (warehouse) is not allowed to do this.` for a wrong Role, and one plain sentence per wrong field for bad input (for example `Price must be 0 or more`).
 
