@@ -15,3 +15,9 @@
 - [ ] Sales, Warehouse and Accountant: list → `200`. Create, edit or deactivate → `403`.
 - [ ] Screens: list with badge and empty state, create and edit form showing field-level errors, deactivate with confirmation. Money as `450.00 THB`. Works on a phone.
 - [ ] Section 5 of `testing-manual.md` (US-2) and the product rules in section 2 are filled in.
+
+## Progress notes
+
+- Done: backend tests (red, 05904ea) and `products/router.py` (GET list/one, POST, PATCH; 60 tests green).
+- Next: frontend `src/pages/products/` (list, forms, deactivate dialog), testing-manual section 5, tick boxes.
+- Gotchas: run backend with `DATABASE_URL=` blank (placeholder password in .env). PATCH uses `model_fields_set` so omitted fields stay; explicit null is a 422.
