@@ -24,6 +24,17 @@ export const ROLE_LABELS: Record<Role, string> = {
   accountant: 'Accountant',
 }
 
+/** Names shown in the menu and in messages (use the glossary terms). */
+export const SCREEN_LABELS: Record<Screen, string> = {
+  dashboard: 'Dashboard',
+  products: 'Products',
+  customers: 'Customers',
+  'sales-orders': 'Sales Orders',
+  stock: 'Stock',
+  invoices: 'Invoices',
+  accounting: 'Accounting',
+}
+
 /** Menu order. */
 export const SCREENS: readonly Screen[] = [
   'dashboard',
