@@ -64,7 +64,17 @@ The orchestrator updates this file after every merge or decision and commits it.
     - Not browser-verified: the 375px layout, the amber Low stock tile, refresh across tabs.
     - The tests insert the US-1 rows directly, so after 09 an end-to-end test (confirm, then dashboard) is still owed.
 - **Next:**
-  - After 09 merges: start 10 (invoices, accounting, payments), then 12 (PDF), then 13 (README, which the login page already points to for the password).
+  - **13a RUNNING** on `feature/docs-reset` (Sonnet high), in parallel with 09:
+    - the `reset_demo` script (TDD on a TEST company, one real reset of the demo data)
+    - the first README
+    - an ER-diagram check
+  - **Overnight plan** (user asleep since about 02:00 Tue 21 Oct Bangkok; user said "complete most of the task by yourself"):
+    - merge 09
+    - start 10, merge it, then 12
+    - then 13b: design review on all screens, the demo script in testing-manual §8, the final README
+    - between merges, walk the real US-1 in Chrome; the tab group is logged in as Nok
+    - run `reset_demo` after any production test data
+    - collect everything that needs the user in manual.md
   - 04 deploy as soon as `vercel whoami` succeeds.
 - **Ticket 04 (deploy), part 1 MERGED** (0bb174f): `vercel.json` in Vercel **services** mode.
   - `backend` (fastapi, `app.main:app`) is public at `/api/(.*)`. The service sees the original `/api/...` path, so no code change was needed.
