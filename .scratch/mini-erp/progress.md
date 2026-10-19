@@ -51,7 +51,13 @@ The orchestrator updates this file after every merge or decision and commits it.
     - Line-level endpoints. Price is frozen on add, and adding the same product again merges into its line.
     - `vat_for()` lives in `app/core/money.py`.
     - The detail includes `invoice: null`, and there's an `<OrderActions>` slot for 09.
-  - `feature/dashboard` (11, high): `GET /api/dashboard`. Invoice tests set up rows via `conn`.
+  - `feature/dashboard` (11): **MERGED** (6c7e0be).
+    - Sonnet confirmed. Tests are unchanged since red (bb1a810).
+    - Review worktree on main + branch: 255 backend tests and 85 frontend tests pass; typecheck, build and `check:bundle` are clean.
+    - API: `GET /api/dashboard` returns `{sales_today, low_stock_count, open_invoices{count,amount}, stock_value, as_of}` for all 4 roles.
+    - The UI refreshes every 30 s and on window focus.
+    - Not browser-verified: the 375px layout, the amber Low stock tile, refresh across tabs.
+    - The tests insert the US-1 rows directly, so after 09 an end-to-end test (confirm, then dashboard) is still owed.
 - **Next:**
   - 09 confirm: a FRESH agent on `feature/sales-orders` after 08 reports. It reads 08's progress notes. After 09 merges, add an end-to-end dashboard test.
   - 04 deploy as soon as `vercel whoami` succeeds.
