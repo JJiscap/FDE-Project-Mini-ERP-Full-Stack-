@@ -51,7 +51,58 @@ The numbers must agree on every screen. Any screen that disagrees is a bug.
 
 ## 3. Roles (US-3): walk the matrix as each user
 
-_(Filled in by the auth ticket: per-role screen checklist and curl commands for the 403 checks.)_
+### 3.1 Get a token
+
+Every API call (except the docs page) needs `Authorization: Bearer <access token>`. Two ways to get a token:
+
+**A. With curl** (works before the frontend exists). Run from the repo root, where `.env` lives. Nothing here is printed to the screen except the token you ask for:
+
+```bash
+set -a; source .env; set +a                    # loads SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY
+TOKEN=$(curl -s "$SUPABASE_URL/auth/v1/token?grant_type=password" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" -H "Content-Type: application/json" \
+  -d '{"email":"nok@siambean.test","password":"SiamBean-Demo-2026"}' \
+  | python3 -c 'import sys,json; print(json.load(sys.stdin)["access_token"])')
+```
+
+Change the email to log in as another person (table in section 0). If the variable stays empty, the email or password is wrong. The token lasts one hour.
+
+**B. From the browser** (once the app is deployed or running locally): log in, open DevTools → Application → Local Storage → the `sb-…-auth-token` entry → copy the `access_token` value.
+
+### 3.2 Call `/api/me`
+
+Start the API locally with `cd backend && uv run fastapi dev app/main.py` (it listens on http://127.0.0.1:8000), or use the deployed URL instead.
+
+| Try | Command | Success looks like |
+| --- | --- | --- |
+| No token | `curl -i http://127.0.0.1:8000/api/me` | **401** and `{"detail":"You are not logged in. Please sign in and try again."}` |
+| Garbage token | `curl -i http://127.0.0.1:8000/api/me -H "Authorization: Bearer abc"` | **401** and `{"detail":"Your login is not valid or has expired. Please sign in again."}` |
+| Real token | `curl -i http://127.0.0.1:8000/api/me -H "Authorization: Bearer $TOKEN"` | **200** and `{"id":"…","email":"nok@siambean.test","full_name":"Nok","role":"sales","company":{"id":…,"name":"Siam Bean Co."}}` |
+| Login but no role | Create a user in the Supabase dashboard (Authentication → Users → Add user, auto-confirm) without a `users` row, log in as them, call `/api/me` | **403** and `{"detail":"Your account has no role yet. Ask the owner to give you access."}` |
+
+The interactive API docs are at `/api/docs` (use **Authorize** and paste the token).
+
+### 3.3 The Role matrix (walk it as each user)
+
+Every row must hold on the server, not just in the menu. `403` means "wrong Role", `401` means "no or bad token". Each feature ticket adds its own curl lines here as it lands.
+
+| Action | Admin | Sales | Warehouse | Accountant |
+| --- | --- | --- | --- | --- |
+| View products (on hand, low stock) | ✓ | ✓ | ✓ | ✓ |
+| Create / edit / deactivate products | ✓ | 403 | 403 | 403 |
+| View customers | ✓ | ✓ | 403 | ✓ |
+| Create / edit / deactivate customers | ✓ | ✓ | 403 | 403 |
+| Sales orders (view, create, edit Draft, cancel, confirm) | ✓ | ✓ | 403 | 403 |
+| Stock-in / stock-out / adjustment, movement history | ✓ | 403 | ✓ | 403 |
+| View invoices | ✓ | ✓ | 403 | ✓ |
+| Accounting screen, record payment | ✓ | 403 | 403 | ✓ |
+| Dashboard | ✓ | ✓ | ✓ | ✓ |
+
+Error messages you should see in the API: `Your role (warehouse) is not allowed to do this.` for a wrong Role, and one plain sentence per wrong field for bad input (for example `Price must be 0 or more`).
+
+### 3.4 Automated tests and cleanup
+
+`cd backend && uv run pytest` creates a throwaway company `TEST-<runid>` with four users (one per Role), runs every test from a clean copy of the sample data, and deletes everything at the end. It never touches Siam Bean Co. After a crashed run you can check for leftovers in the Supabase SQL editor with `select id, name from public.companies where name like 'TEST-%';` (they are safe to delete).
 
 ## 4. Search (US-5)
 
