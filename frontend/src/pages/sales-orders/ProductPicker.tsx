@@ -161,7 +161,8 @@ export function ProductPicker({ onAdd, busy }: ProductPickerProps) {
         {updating ? (
           <Loader2
             className="absolute top-1/2 right-3 size-4 -translate-y-1/2 animate-spin text-muted-foreground"
-            aria-label="Searching"
+            role="img"
+                aria-label="Searching"
           />
         ) : null}
       </div>
@@ -186,7 +187,7 @@ export function ProductPicker({ onAdd, busy }: ProductPickerProps) {
                 <li key={p.id}>
                   <button
                     type="button"
-                    className="min-h-12 w-full px-4 py-2.5 text-left break-words hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+                    className="min-h-12 w-full px-4 py-2.5 text-left break-words hover:bg-accent focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring focus-visible:outline-none"
                     onClick={() => {
                       setProduct(p)
                       setQuantity('')

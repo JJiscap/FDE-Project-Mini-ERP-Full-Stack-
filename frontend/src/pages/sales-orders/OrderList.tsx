@@ -109,6 +109,7 @@ export function OrderList() {
             {updating ? (
               <Loader2
                 className="absolute top-1/2 right-3 size-4 -translate-y-1/2 animate-spin text-muted-foreground"
+                role="img"
                 aria-label="Searching"
               />
             ) : null}

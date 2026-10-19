@@ -170,7 +170,8 @@ export function Receivables() {
           {updating ? (
             <Loader2
               className="absolute top-1/2 right-3 size-4 -translate-y-1/2 animate-spin text-muted-foreground"
-              aria-label="Searching"
+              role="img"
+                aria-label="Searching"
             />
           ) : null}
         </div>
