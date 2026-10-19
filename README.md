@@ -79,7 +79,7 @@ Tables: `companies`, `users`, `customers`, `products`, `stock_movements`, `sales
 
 | Story | Status | Notes |
 | --- | --- | --- |
-| US-1 Sales order → invoice | In progress (ticket 09) | Draft sales orders, the 7% VAT totals and cancel are done. Confirm → stock out → `INV-0001` is being built. |
+| US-1 Sales order → invoice | Done | Confirming Café Lune's 20 × ARB-1KG takes stock from 170 to 150 kg and issues `INV-0001`: 9,000.00 + 630.00 VAT = 9,630.00 THB, due in 30 days. With too little stock it is refused (`409 Not enough stock for ARB-1KG`) and nothing changes. |
 | US-2 Low stock | Done | Low stock badge on the product list and a Low Stock count on the dashboard (ROB-1KG: 35 kg is below its reorder level of 40). |
 | US-3 Roles | Done for the built modules | `401`/`403` enforced on the server for products, customers, stock, sales orders and dashboard. The access-denied page shows on forbidden screens. Invoice and accounting endpoints get the same checks in their tickets. |
 | US-4 Payment | In progress (ticket 10) | Invoices screen, Accounting screen and recording a payment. |
@@ -124,8 +124,8 @@ After a reset the dashboard shows Low Stock 1, Stock Value 107,100.00 THB, Sales
 Tests were written first (red before green) and run against the hosted Supabase project in a throwaway `TEST-<runid>` company with its own four role users, which is cleaned up afterwards. They never touch the Siam Bean demo data ([ADR-0005](docs/adr/0005-tests-run-against-hosted-supabase-in-a-throwaway-company.md)). Backend tests go through the HTTP seam with FastAPI's `TestClient`.
 
 ```bash
-cd backend && uv run pytest -q                                   # 337 passed
-cd frontend && npm run typecheck && npm test && npm run build    # 117 tests passed
+cd backend && uv run pytest -q                                   # 381 passed
+cd frontend && npm run typecheck && npm test && npm run build    # 123 tests passed
 ```
 
 Counts as of 20 Oct 2026, taken from running the suites.
