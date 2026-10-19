@@ -33,6 +33,28 @@ Course project CU FDE3. Demo: Thu 22 Oct 2026, 17:00, on the deployed URL. Solo 
   - **Vercel skills:** deploys.
 - Append any step only a human can do (logins, dashboards, accounts, forms) to `manual.md`. Append how to test a finished feature by hand to `testing-manual.md`.
 
+## Context hygiene
+
+- **One ticket per subagent.** That holds even when tickets share a branch: the next ticket gets a fresh agent on the same branch.
+- Subagents keep tool output small:
+  - `uv run pytest -q`, with `-x` or `--tb=short` while iterating.
+  - `tail`, `head` or `grep` instead of dumping whole files or logs.
+  - Read files by line range when a file is large.
+- Subagents write progress notes into their ticket file (`## Progress notes`: done, next, gotchas) as they go, so a compacted or restarted agent can resume from disk.
+- The orchestrator never reads subagent transcripts, only their final reports. A partial result goes to a **fresh** agent that resumes from the ticket's progress notes. Never extend a tired agent.
+- `.scratch/mini-erp/progress.md` is the orchestrator's ledger. Update and commit it after every merge or decision. A `SessionStart` hook (matcher `compact`, in `.claude/settings.json`) re-injects it after compaction.
+
+## Compact instructions
+
+When compacting, keep:
+- which branches are merged, running or pending
+- the production URL
+- open bugs and blockers
+- decisions made since the last update of `progress.md`
+- what the user has asked for and not yet received
+
+Drop tool output, file contents and diffs; they can be re-read from disk.
+
 ## Git rules
 
 - **One branch per main feature or per subagent:** `feature/<module>`, `fix/<topic>`, `docs/<topic>`. Never commit feature work directly on `main`.
