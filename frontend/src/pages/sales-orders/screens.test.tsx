@@ -346,6 +346,132 @@ describe('Order detail', () => {
   })
 })
 
+describe('Confirm order (US-1)', () => {
+  const confirmedOrder = () =>
+    draft({
+      status: 'confirmed',
+      confirmed_at: '2026-10-22T10:00:00Z',
+      invoice: { id: 5, number: 'INV-0001' },
+      lines: [{ ...draft().lines[0], on_hand: 150 }],
+    })
+
+  it('shows a primary "Confirm order" button on a Draft; clicking it asks first and shows the Total', async () => {
+    const calls = fakeApi({
+      'GET /api/sales-orders/12': draft(),
+      'GET /api/customers': page([lune]),
+      'GET /api/products': page([arb]),
+    })
+    renderAt('/sales-orders/12')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Confirm order' }))
+
+    const dialog = await screen.findByRole('alertdialog')
+    expect(within(dialog).getByText('Confirm SO-0001?')).toBeInTheDocument()
+    expect(dialog).toHaveTextContent('9,630.00 THB')
+    expect(dialog).toHaveTextContent('Café Lune')
+    expect(dialog).toHaveTextContent("can't be undone")
+    expect(calls.some((c) => c.method === 'POST')).toBe(false) // nothing sent yet
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Go back' }))
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument())
+    expect(calls.some((c) => c.method === 'POST')).toBe(false)
+    expect(screen.getByText('Draft')).toBeInTheDocument()
+  })
+
+  it('confirming sends one POST, then shows Confirmed, the Invoice number as a link, and a read-only order', async () => {
+    const invalidate = vi.spyOn(QueryClient.prototype, 'invalidateQueries')
+    const calls = fakeApi({
+      'GET /api/sales-orders/12': draft(),
+      'POST /api/sales-orders/12/confirm': () => ({ json: confirmedOrder() }),
+      'GET /api/customers': page([lune]),
+      'GET /api/products': page([arb]),
+    })
+    renderAt('/sales-orders/12')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Confirm order' }))
+    const dialog = await screen.findByRole('alertdialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Confirm order' }))
+
+    const link = await screen.findByRole('link', { name: /INV-0001/ })
+    expect(link).toHaveAttribute('href', '/invoices/5')
+    expect(calls.filter((c) => c.method === 'POST')).toEqual([
+      { method: 'POST', url: '/api/sales-orders/12/confirm', body: undefined },
+    ])
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+    expect(screen.getByText(/This order is final/)).toBeInTheDocument()
+    expect(screen.getByText('Confirmed', { selector: 'span' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Confirm order' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Cancel order/ })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Quantity of ARB-1KG')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Remove ARB-1KG' })).not.toBeInTheDocument()
+    expect(screen.getByTestId('total')).toHaveTextContent('9,630.00 THB')
+
+    // Stock, the product lists, Invoices and the Dashboard all changed: they refresh.
+    const keys = invalidate.mock.calls.map((c) => JSON.stringify((c[0] as { queryKey: unknown }).queryKey))
+    for (const key of ['["stock"]', '["products"]', '["invoices"]', '["dashboard"]']) {
+      expect(keys).toContain(key)
+    }
+  })
+
+  it('shows the API reason inside the dialog when stock is short, and the order stays a Draft', async () => {
+    fakeApi({
+      'GET /api/sales-orders/12': draft(),
+      'POST /api/sales-orders/12/confirm': () => ({ status: 409, json: { detail: 'Not enough stock for ARB-1KG' } }),
+      'GET /api/customers': page([lune]),
+      'GET /api/products': page([arb]),
+    })
+    renderAt('/sales-orders/12')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Confirm order' }))
+    const dialog = await screen.findByRole('alertdialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Confirm order' }))
+
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent('Not enough stock for ARB-1KG')
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument() // stays open so the message is read
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Go back' }))
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument())
+    expect(screen.getByText('Draft')).toBeInTheDocument()
+    expect(screen.getByLabelText('Quantity of ARB-1KG')).toHaveValue('20') // still editable
+    expect(screen.queryByRole('link', { name: /INV-/ })).not.toBeInTheDocument()
+
+    // Asking again starts clean: the old message is gone.
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm order' }))
+    const again = await screen.findByRole('alertdialog')
+    expect(within(again).queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('a Draft with no lines cannot be confirmed and says why', async () => {
+    fakeApi({
+      'GET /api/sales-orders/12': draft({ lines: [], subtotal: '0.00', vat: '0.00', total: '0.00' }),
+      'GET /api/customers': page([lune]),
+      'GET /api/products': page([arb]),
+    })
+    renderAt('/sales-orders/12')
+
+    expect(await screen.findByRole('button', { name: 'Confirm order' })).toBeDisabled()
+    expect(screen.getByText('Add at least one product to confirm.')).toBeInTheDocument()
+  })
+
+  it('a Confirmed order links to its Invoice and offers no Confirm or Cancel', async () => {
+    fakeApi({ 'GET /api/sales-orders/12': confirmedOrder() })
+    renderAt('/sales-orders/12')
+
+    const link = await screen.findByRole('link', { name: /INV-0001/ })
+    expect(link).toHaveAttribute('href', '/invoices/5')
+    expect(screen.queryByRole('button', { name: 'Confirm order' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Cancel order/ })).not.toBeInTheDocument()
+  })
+
+  it('a Cancelled order has no Confirm button', async () => {
+    fakeApi({ 'GET /api/sales-orders/12': draft({ status: 'cancelled' }) })
+    renderAt('/sales-orders/12')
+
+    expect(await screen.findByText(/This order was cancelled/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Confirm order' })).not.toBeInTheDocument()
+  })
+})
+
 describe('Order list', () => {
   const rows = [
     { id: 2, number: 'SO-0002', order_date: '2026-10-22', status: 'draft', customer: { id: 8, name: 'Brew Lab Ari' }, line_count: 0, subtotal: '0.00', vat: '0.00', total: '0.00' },
