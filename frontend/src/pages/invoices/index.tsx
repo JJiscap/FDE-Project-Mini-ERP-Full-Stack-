@@ -1,17 +1,13 @@
-import { ReceiptText } from 'lucide-react'
-import { EmptyState } from '@/components/EmptyState'
-import { PageHeader } from '@/components/PageHeader'
+import { Route, Routes } from 'react-router'
+import { InvoiceDetail } from './InvoiceDetail'
+import { InvoiceList } from './InvoiceList'
 
-// STUB: the invoices ticket replaces this file. Only edit inside src/pages/invoices/.
+/** Invoices (Admin, Sales, Accountant): the list and one Invoice. Payments are recorded from the Accounting screen or the detail. */
 export default function InvoicesPage() {
   return (
-    <>
-      <PageHeader title="Invoices" description="Every Invoice issued, with its Balance and status." />
-      <EmptyState
-        icon={ReceiptText}
-        title="Coming soon"
-        description="Invoices will appear here once they are built."
-      />
-    </>
+    <Routes>
+      <Route index element={<InvoiceList />} />
+      <Route path=":id" element={<InvoiceDetail />} />
+    </Routes>
   )
 }
