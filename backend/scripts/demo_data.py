@@ -130,9 +130,14 @@ def _insert_products(conn: psycopg.Connection, company_id: int) -> None:
     )
 
 
+def customer_specs(total: int) -> list[CustomerSpec]:
+    """The 3 sample customers plus generated cafés, `total` in all."""
+    return (list(SAMPLE_CUSTOMERS) + generated_cafes(max(total - len(SAMPLE_CUSTOMERS), 0)))[:total]
+
+
 def _insert_customers(conn: psycopg.Connection, company_id: int, total: int) -> None:
     """The 3 sample customers plus generated cafés up to `total`. Existing names are left alone."""
-    specs = (list(SAMPLE_CUSTOMERS) + generated_cafes(max(total - len(SAMPLE_CUSTOMERS), 0)))[:total]
+    specs = customer_specs(total)
     conn.execute(
         """
         insert into public.customers
