@@ -18,3 +18,9 @@
 - [ ] All 4 Roles → `200`. No token → `401`.
 - [ ] Screen: 4 tiles with clear labels ("Sales today (incl. VAT)"), money as `9,630.00 THB`, a skeleton while loading, and a 2×2 grid on a phone.
 - [ ] Section 1 (steps 1, 7, 9) of `testing-manual.md` is verified.
+
+## Progress notes
+
+- Red committed: 16 tests in backend/tests/test_dashboard.py, all 404.
+- Backend done: GET /api/dashboard (one SQL query, live, filtered by company_id), 16 passed. Invoices have only open/paid statuses (no cancelled).
+- Next: UI in frontend/src/pages/dashboard/, docs (testing-manual 7a), tick checkboxes.
