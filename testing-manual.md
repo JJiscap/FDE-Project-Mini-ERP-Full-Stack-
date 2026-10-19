@@ -271,7 +271,21 @@ Clean up afterwards: set ARB-1KG back to Price `450` and leave NEW-1KG deactivat
 
 ## 6. Bonus: PDF invoice
 
-_(pending: PDF ticket)_
+Prerequisite: INV-0001 exists (confirm the US-1 order first, see section 1). The **Download PDF** button sits on the Invoice detail page; the endpoint is `GET /api/invoices/{id}/pdf`.
+
+| # | Who | Do | Expect |
+|---|---|---|---|
+| 1 | Nok (Sales) | Open Invoices, then INV-0001, tap **Download PDF** | The button shows "Preparing PDF…" for a moment, then the browser saves **INV-0001.pdf**. No error banner |
+| 2 | Nok | Open the PDF | One A4 page, top to bottom: **Siam Bean Co.** with its address and `Tax ID: 0105560012345`; **INVOICE** with Invoice No. `INV-0001`, Invoice date (today, Bangkok) and Due date (30 days later); **BILL TO Café Lune** with its address and Tax ID; a table with `ARB-1KG`, `Arabica...`, `20 kg`, `450.00 THB`, `9,000.00 THB`; then **Subtotal 9,000.00 THB**, **VAT 7% 630.00 THB**, **Total 9,630.00 THB**, **Paid 0.00 THB**, **Balance 9,630.00 THB** |
+| 3 | Fon (Accountant) | Record a payment of `3000` on INV-0001, then download the PDF again | **Paid 3,000.00 THB** and **Balance 6,630.00 THB**; Total is still 9,630.00 THB |
+| 4 | Somchai (Admin) | Change ARB-1KG Price to `999` (Products), then download INV-0001.pdf again | The PDF is unchanged: the line still says `450.00 THB` and `9,000.00 THB`. Set the price back to `450` afterwards |
+| 5 | Somchai, Nok, Fon | Download the PDF | Works for all three. Somchai, Nok and Fon get `200 application/pdf` |
+| 6 | Lek (Warehouse) | Call `GET /api/invoices/{id}/pdf` with Lek's token (section 3.1) | `403`. The Warehouse never sees an Invoice screen, so there is no button |
+| 7 | Anyone | Call it with no token | `401`. With an unknown id: `404 Invoice not found.` |
+| 8 | Phone | DevTools 375 px (or a real phone), Invoice detail, tap **Download PDF** | The button is full width and easy to tap; the PDF downloads or opens in the viewer. No horizontal scroll |
+| 9 | Nok | Turn the network off (DevTools offline), tap **Download PDF** | A red banner: "Cannot reach the server. Check your internet connection and try again." |
+
+A name or address with Thai characters does not break the download: the PDF only has Latin letters, so those characters print as `?`.
 
 ## 7. Non-functional checks
 
