@@ -12,6 +12,7 @@ from app.core.errors import register_error_handlers
 from app.modules.auth.router import router as auth_router
 from app.modules.customers.router import router as customers_router
 from app.modules.dashboard.router import router as dashboard_router
+from app.modules.invoice_pdf.router import router as invoice_pdf_router
 from app.modules.invoices.router import accounting_router, router as invoices_router
 from app.modules.products.router import router as products_router
 from app.modules.sales_orders.router import router as sales_orders_router
@@ -33,6 +34,7 @@ for module_router in (
     stock_router,
     sales_orders_router,
     invoices_router,
+    invoice_pdf_router,
     accounting_router,
     dashboard_router,
 ):
