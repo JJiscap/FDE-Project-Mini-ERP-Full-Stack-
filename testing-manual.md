@@ -51,6 +51,23 @@ The numbers must agree on every screen. Any screen that disagrees is a bug.
 
 _(Filled in by the auth ticket: per-role screen checklist and curl commands for the 403 checks.)_
 
+### 3a. App shell (ticket 03: login, menu, Access denied)
+
+Run `cd frontend && npm run dev`, open http://localhost:5173 (start the backend on :8000 for `/api/me`).
+
+| Check | Do | Success looks like |
+| --- | --- | --- |
+| Login | Open `/products` logged out. Log in as Nok | You land back on **Products**. Header shows **Nok** and a **Sales** badge |
+| Wrong password | Log in with a wrong password | Red box: "Email or password is incorrect. Check them and try again." Nothing else changes |
+| Empty fields | Press **Log in** with both fields empty | "Enter your email" and "Enter your password" under the fields |
+| Stay logged in | Reload the page | Still logged in |
+| Logout | Press **Log out** (sidebar, or menu on a phone) | Back on the Login page. Back button does not show data |
+| Menu per Role | Log in as each demo user | Admin: all 7. Sales: Dashboard, Products, Customers, Sales Orders, Invoices. Warehouse: Dashboard, Products, Stock. Accountant: Dashboard, Products, Customers, Invoices, Accounting |
+| Access denied by URL | As Nok open `/accounting`; as Lek open `/customers` | "You do not have access to this page", names the Roles that may open it, **Back to Dashboard** link works |
+| API 403 | As Nok call a forbidden API from any screen | Same Access denied page (not a blank screen or raw error) |
+| Phone | DevTools device 375 px wide: Login, Dashboard, every menu item | No horizontal scroll. The menu button opens a drawer, tapping an item closes it |
+| Unknown URL | Open `/nope` | "We could not find that page" with a link back |
+
 ## 4. Search (US-5)
 
 _(pending: customers ticket)_
@@ -70,7 +87,7 @@ _(pending: PDF ticket)_
 - [ ] Every empty list says so (e.g. "No invoices yet")
 - [ ] Money always looks like `9,630.00 THB`
 - [ ] No secrets in git: `git log -p | grep -iE "sb_secret|service_role|eyJhbGci"` prints nothing
-- [ ] No secret key in the browser bundle: `grep -r "sb_secret" frontend/dist` prints nothing
+- [ ] No secret key in the browser bundle: `cd frontend && npm run build && npm run check:bundle` prints "not in dist/" for every secret. (A plain `grep sb_secret frontend/dist` matches once: supabase-js's own key-prefix check, not a key.)
 
 ## 8. Demo rehearsal (7 minutes + 3 Q&A)
 

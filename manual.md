@@ -22,3 +22,8 @@ Claude does everything else. Tick each box when it's done. Run commands prefixed
 - [ ] **8. Record a backup video** of the US-1 flow (Sales → confirm → invoice → Accountant payment → dashboard) in case the network fails.
 - [ ] **9. Rehearse** the 7-minute demo with a timer (script in `testing-manual.md`).
 - [ ] **10. Log in before your turn** on the deployed URL, not `localhost`.
+
+## Frontend (ticket 03)
+
+- [ ] **11. Vercel env vars.** In the Vercel project add `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` (Production and Preview). The frontend build reads exactly these two names. The secret key and `DATABASE_URL` belong only to the API function.
+- [ ] **12. Check the demo emails on the Login page.** The "Demo accounts" box fills `somchai@`, `nok@`, `lek@`, `fon@` + `siambean.test`. Only `nok@` was confirmed to exist when this was built. If the seed uses different emails, edit `DEMO_ACCOUNTS` in `frontend/src/pages/login/index.tsx`.
