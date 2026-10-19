@@ -11,14 +11,14 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Branch:** `feature/foundation-backend`
 
-- [ ] `GET /api/me` with no token → `401`. With a garbage token → `401`.
-- [ ] `GET /api/me` as each of the 4 Roles → `200` with the right Role and Company.
-- [ ] A logged-in auth user with no `users` row → `403`.
-- [ ] A role guard on a protected test endpoint returns `403` for a disallowed Role and `200` for an allowed one. This proves the mechanism the modules will use.
-- [ ] Validation errors come back as one readable message per field, not raw pydantic output.
-- [ ] Two pytest runs back to back both pass and leave no `TEST-*` Company behind.
-- [ ] Section 3 of `testing-manual.md` explains how to get a token (from `/api/me` or the browser session) and call an endpoint with curl.
+- [x] `GET /api/me` with no token → `401`. With a garbage token → `401`.
+- [x] `GET /api/me` as each of the 4 Roles → `200` with the right Role and Company.
+- [x] A logged-in auth user with no `users` row → `403`.
+- [x] A role guard on a protected test endpoint returns `403` for a disallowed Role and `200` for an allowed one. This proves the mechanism the modules will use.
+- [x] Validation errors come back as one readable message per field, not raw pydantic output.
+- [x] Two pytest runs back to back both pass and leave no `TEST-*` Company behind.
+- [x] Section 3 of `testing-manual.md` explains how to get a token (from `/api/me` or the browser session) and call an endpoint with curl.

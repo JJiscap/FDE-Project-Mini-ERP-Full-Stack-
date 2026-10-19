@@ -12,8 +12,29 @@ The orchestrator updates this file after every merge or decision and commits it.
     - Verified Sonnet 5.5. Typecheck, 43 tests, build and bundle-secret check all pass. Test changes after red only tightened assertions.
     - Stack: Vite 8, React 19, Tailwind 4, shadcn, react-router 8, react-query 5, zod 4.
     - Conventions are in `frontend/README.md`. Module pages: edit only `src/pages/<module>/index.tsx`, use nested `<Routes>` for sub-pages, and gate buttons with helpers from `permissions.ts`.
-  - `feature/foundation-backend` (tickets 01+02): **running.** Effort xhigh.
-- **Next:** review and merge Wave 1, then 04 deploy (needs the user's `vercel login`). Then Wave 2: 05, 06, 07 in parallel.
+  - `feature/foundation-backend` (tickets 01+02): **merged.**
+    - Verified Sonnet 5.5. I reran the suite: 104 passed.
+    - DB checked via MCP:
+      - 0 `TEST-*` companies left.
+      - Siam Bean has 200 customers.
+      - On Hand is 170/35/90/240.
+      - 5 demo users exist.
+      - RLS is on all tables, and `anon` can't read tables or call functions.
+    - Advisors: only INFO (`rls_enabled_no_policy`) plus the optional leaked-password WARN.
+    - JWT: verified via JWKS (ES256), checking `aud` and `iss`.
+    - When `DATABASE_URL` is **blank**, `config.py` builds the pooler URI from `POSTGRES_PASSWORD` (host `aws-0-ap-southeast-1.pooler.supabase.com:6543`).
+    - Harness, in `backend/tests/conftest.py`:
+      - Fixtures: `client_as(role)`, `headers[role]`, `test_company_id`, `conn`.
+      - Each test starts clean: 4 products, opening stock, 3 customers.
+      - Cleanup refuses to touch any company not named `TEST-*`.
+    - To add an endpoint, edit `app/modules/<m>/router.py`, guarded by `Depends(require_roles(...))`, with `conn: Conn`. Return pydantic models with `Money`.
+    - Extra DB constraints:
+      - Movement sign matches its type.
+      - `total = subtotal + vat`.
+      - `doc_type` must be one of SO/INV/IN/OUT/ADJ.
+- **Wave 1 (01, 02, 03) is merged.**
+- **Wave 2:** 05 products, 06 customers and 07 stock run in parallel, one Sonnet agent each.
+- **Ticket 04 (deploy)** starts as soon as `vercel whoami` shows the user is logged in.
 
 ## Waves (tickets in .scratch/mini-erp/issues/)
 
@@ -41,7 +62,7 @@ The orchestrator updates this file after every merge or decision and commits it.
 ## Open issues / blockers
 
 - Waiting on the user: `vercel login` and the git identity (manual.md steps 1–2).
-- **`DATABASE_URL` is EMPTY in `.env`.** The user must paste the transaction pooler URI themselves (manual.md step 0). The backend agent may report this as blocking.
+- **`DATABASE_URL` in `.env` still contains `[YOUR-PASSWORD]`.** It breaks DB connections until the user runs the manual.md step 0 one-liner. Workaround: prefix commands with `DATABASE_URL=` so the backend builds the URI from `POSTGRES_PASSWORD` instead.
 - Frontend open items:
   - Only Nok's login was verified.
   - The real `/api/me` was not exercised yet.

@@ -4,7 +4,11 @@ Claude does everything else. Tick each box when it's done. Run commands prefixed
 
 ## Now (blocks the first deploy)
 
-- [ ] **0. Fill in `DATABASE_URL` in `.env` (urgent: the backend needs it).** The line exists but is empty. In the Supabase dashboard open **Connect** (top bar) → **Connection string** → **Transaction pooler** (port **6543**). Copy the URI, replace `[YOUR-PASSWORD]` with your database password (the same value as `POSTGRES_PASSWORD`), and paste it after `DATABASE_URL=` in the repo-root `.env`. Do it in your editor and **don't paste it into the chat**. Then tell Claude "DATABASE_URL done".
+- [ ] **0. Finish `DATABASE_URL` in `.env`.** The pooler URI (port 6543) is in place, but it still contains the placeholder `[YOUR-PASSWORD]`. To swap in the real, URL-encoded password from `POSTGRES_PASSWORD` without showing it, run:
+  ```
+  ! python3 -c "import re,urllib.parse as u;p='.env';s=open(p).read();pw=re.search(r'^POSTGRES_PASSWORD=(.*)$',s,re.M).group(1).strip().strip('\"\'');n=re.subn(r'\[?YOUR-PASSWORD\]?',u.quote(pw,safe=''),s);open(p,'w').write(n[0]);print('replaced',n[1])"
+  ```
+  It prints only `replaced 1`. Local development still works without this, because the backend builds the URI itself when `DATABASE_URL` is blank. A wrong non-blank value, though, breaks it, and Vercel needs the real value.
 
 - [ ] **1. Log in to Vercel.** Run `! vercel login` and finish the browser sign-in. If Vercel asks to connect GitHub, allow access to `JJiscap/FDE-Project-Mini-ERP-Full-Stack-` so every push to `main` redeploys.
 - [ ] **2. Set your Git identity** so commits link to your GitHub profile. Without it, commits show `...@MacBook-Air...local`:
@@ -25,7 +29,10 @@ Claude does everything else. Tick each box when it's done. Run commands prefixed
 - [ ] **9. Rehearse** the 7-minute demo with a timer (script in `testing-manual.md`).
 - [ ] **10. Log in before your turn** on the deployed URL, not `localhost`.
 
-## Frontend (ticket 03)
+## Found while building (Wave 1)
 
-- [ ] **11. Vercel env vars.** In the Vercel project add `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` (Production and Preview). The frontend build reads exactly these two names. The secret key and `DATABASE_URL` belong only to the API function.
-- [ ] **12. Check the demo emails on the Login page.** The "Demo accounts" box fills `somchai@`, `nok@`, `lek@`, `fon@` + `siambean.test`. Only `nok@` was confirmed to exist when this was built. If the seed uses different emails, edit `DEMO_ACCOUNTS` in `frontend/src/pages/login/index.tsx`.
+- [ ] **11. Vercel environment variables.** The deploy ticket (04) will try to set these with the Vercel CLI after your `vercel login`, without printing them. Only if that fails, add them yourself in the Vercel dashboard → Project → Settings → Environment Variables (Production and Preview):
+  - Frontend build: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`.
+  - API function: `DATABASE_URL` (the pooler URI from step 0, with the real password), `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_JWKS_URL`.
+  - `SUPABASE_SECRET_KEY` is only used by the local seed script and is not needed on Vercel.
+- [ ] **12. (Optional) Leaked password protection.** The Supabase security advisor shows one WARN, "Leaked Password Protection Disabled". It's a dashboard-only switch and may need a paid plan: Authentication → Sign In / Providers → Email → Password security. The demo passwords are shared on purpose, so this is cosmetic. Nothing at ERROR level remains.

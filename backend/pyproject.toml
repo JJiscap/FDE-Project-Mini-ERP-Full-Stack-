@@ -1,0 +1,28 @@
+[project]
+name = "siam-bean-erp-backend"
+version = "0.1.0"
+description = "Siam Bean Co. Mini ERP: FastAPI backend (Supabase Postgres + Auth)"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.149.0",
+    "httpx>=0.28.1",
+    "psycopg-pool>=3.3.3",
+    "psycopg[binary]>=3.3.6",
+    "pyjwt[crypto]>=2.15.1",
+    "python-dotenv>=1.2.4",
+]
+
+[tool.uv]
+package = false
+
+[dependency-groups]
+dev = [
+    "fastapi-cli[standard]>=0.0.32",
+    "httpx2>=2.14.0",
+    "pytest>=9.1.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"
