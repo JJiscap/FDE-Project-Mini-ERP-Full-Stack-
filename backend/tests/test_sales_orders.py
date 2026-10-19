@@ -531,7 +531,8 @@ def test_a_confirmed_order_shows_its_invoice(client_as, conn, test_company_id):
         """
         insert into public.invoices
             (company_id, number, order_id, customer_id, due_date, subtotal, vat, total)
-        values (%s, 'INV-0001', %s, %s, current_date, 9000, 630, 9630) returning id
+        values (%s, 'INV-0001', %s, %s, (timezone('Asia/Bangkok', now()))::date, 9000, 630, 9630)
+        returning id
         """,
         (test_company_id, order["id"], order["customer"]["id"]),
     ).fetchone()["id"]
