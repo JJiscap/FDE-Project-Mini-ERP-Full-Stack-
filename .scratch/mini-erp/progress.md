@@ -80,7 +80,23 @@ The orchestrator updates this file after every merge or decision and commits it.
   - **Blank `/invoices` once:** one load during the pdf-wire redeploy showed a blank page. Five reloads were fine, with no console errors.
     - Lesson: **never merge during the demo.**
     - 13b adds an app-level error boundary.
-  - **13b RUNNING** (`feature/docs-polish`, Sonnet high): design review using the scratchpad screenshots, error boundary, Open-invoices tile wrap, demo script in §8, final README.
+  - **13b: MERGED** (a07e424). Sonnet confirmed.
+    - `AppErrorBoundary`, plus a one-time reload on a failed chunk load.
+    - a11y: radio groups with arrow keys, `role=alert` and `aria-describedby` on field errors, visible picker focus, no `<p>` nesting in `ConfirmDialog`.
+    - The Open invoices tile shows the count and amount on two lines.
+    - The 7-minute demo script is in testing-manual §8.
+    - Final README: all user stories have their real status; 459 backend and 180 frontend tests.
+    - Two tests were changed deliberately to match new copy and layout; reviewed, no weaker.
+    - Verified live: 6 Sales screens at 375 px, none blank and none scrolling sideways; no console errors.
+  - **ALL TICKETS 01–13 MERGED AND LIVE.** Ticket 14 (optional user management) is skipped. It would need the secret key on Vercel, and nothing scores it.
+  - All agent worktrees are removed, including the `.env` copy the 13b agent made. Only the root `.env` remains.
+
+## Remaining (all need the user; see manual.md)
+- **14a:** decide on a production test order. Either Claude walks US-1 → payment in the browser and then runs `reset_demo`, or the user clicks through it.
+- **Fon, Lek and Somchai browser pass:** the user logs in as each in the Claude tab group, and Claude clicks through.
+- **Before the demo:**
+  - manual.md 3–10: close sign-up, add collaborators, submit the link, phone check on mobile data, `reset_demo` on Thursday, backup video, rehearsal with §8.
+  - **No merges or pushes to main during the demo window.**
   - **Browser US-1 on production: BLOCKED.** The auto-mode classifier denied "Save as Draft" (Modify Shared Resources). Don't work around it. manual.md 14a asks the user to choose:
     - (a) allow a test order, then `reset_demo`
     - (b) the user clicks through it themselves
