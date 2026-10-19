@@ -33,7 +33,11 @@ The orchestrator updates this file after every merge or decision and commits it.
       - `total = subtotal + vat`.
       - `doc_type` must be one of SO/INV/IN/OUT/ADJ.
 - **Wave 1 (01, 02, 03) is merged.**
-- **Wave 2:** 05 products, 06 customers and 07 stock run in parallel, one Sonnet agent each.
+- **Wave 2: RUNNING** (started Tue 20 Oct). Three Sonnet agents, one ticket each, each in its own worktree. They push their branch and report back, and the orchestrator merges.
+  - `feature/products` (05)
+  - `feature/customers` (06)
+  - `feature/stock` (07)
+- After Wave 2 merges: run 04 deploy (if logged in), then W3 (08 → 09, with 11 in parallel).
 - **Ticket 04 (deploy)** starts as soon as `vercel whoami` shows the user is logged in.
 
 ## Waves (tickets in .scratch/mini-erp/issues/)
@@ -61,8 +65,9 @@ The orchestrator updates this file after every merge or decision and commits it.
 
 ## Open issues / blockers
 
-- Waiting on the user: `vercel login` and the git identity (manual.md steps 1–2).
-- **`DATABASE_URL` in `.env` still contains `[YOUR-PASSWORD]`.** It breaks DB connections until the user runs the manual.md step 0 one-liner. Workaround: prefix commands with `DATABASE_URL=` so the backend builds the URI from `POSTGRES_PASSWORD` instead.
+- Waiting on the user: `vercel login` (manual.md step 1), which blocks ticket 04. Check it with `vercel whoami`.
+- `DATABASE_URL` is FIXED by the user (pooler, port 6543). A real connection was verified. The blank-`DATABASE_URL` workaround is no longer needed.
+- The global git identity is set (JJiscap / vuttipat.v@gmail.com). Old commits keep the auto identity; we decided not to rewrite history.
 - Frontend open items:
   - Only Nok's login was verified.
   - The real `/api/me` was not exercised yet.
