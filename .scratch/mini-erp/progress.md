@@ -55,7 +55,16 @@ The orchestrator updates this file after every merge or decision and commits it.
 - **Next:**
   - 09 confirm: a FRESH agent on `feature/sales-orders` after 08 reports. It reads 08's progress notes. After 09 merges, add an end-to-end dashboard test.
   - 04 deploy as soon as `vercel whoami` succeeds.
-- **Ticket 04 (deploy)** starts as soon as `vercel whoami` shows the user is logged in.
+- **Ticket 04 (deploy), part 1 MERGED** (0bb174f): `vercel.json` in Vercel **services** mode.
+  - `backend` (fastapi, `app.main:app`) is public at `/api/(.*)`. The service sees the original `/api/...` path, so no code change was needed.
+  - `frontend` (vite) handles everything else, with a service-level rewrite `/(.*)` → `/index.html` for deep links.
+  - No bindings. The user confirmed the names, routing and absence of bindings.
+  - Deploy path is the **dashboard Git import** (user's choice). The user sets the env vars in the dashboard (manual.md 1 + 11), then redeploys.
+  - Part 2 (orchestrator, once the user sends the URL):
+    - Smoke-test `/`, reload `/products`, and check `/api/me` returns 401 without a token.
+    - Run `check:bundle` on the deployed JS.
+    - Record the URL in `testing-manual.md` §0 and README.
+    - Chrome MCP click-through.
 
 ## Waves (tickets in .scratch/mini-erp/issues/)
 
@@ -82,7 +91,7 @@ The orchestrator updates this file after every merge or decision and commits it.
 
 ## Open issues / blockers
 
-- Waiting on the user: `vercel login` (manual.md step 1), which blocks ticket 04. Check it with `vercel whoami`.
+- Waiting on the user: Vercel dashboard import, env vars and redeploy (manual.md 1 + 11), then the production URL. The CLI stays logged out, which is optional.
 - `DATABASE_URL` is FIXED by the user (pooler, port 6543). A real connection was verified. The blank-`DATABASE_URL` workaround is no longer needed.
 - The global git identity is set (JJiscap / vuttipat.v@gmail.com). Old commits keep the auto identity; we decided not to rewrite history.
 - Frontend open items:
