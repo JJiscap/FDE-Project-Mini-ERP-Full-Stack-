@@ -108,4 +108,12 @@ The orchestrator updates this file after every merge or decision and commits it.
 
 ## Deploy
 
-- Production URL: _(not yet deployed)_
+- Production URL: **https://fde-project-mini-erp-full-stack.vercel.app**. Dashboard Git import, so every push to `main` redeploys.
+- Smoke test on 20 Oct, all passing:
+  - Deep links serve the SPA, and `/api/me` with no token returns 401 JSON.
+  - The deployed bundle contains the Supabase URL and key (the build env was set) and no server secret.
+  - As Nok: `/api/me`, the dashboard (107,100.00 / low stock 1) and the "lune" search all work. Lek gets 403 on customers.
+- Region fix f9bed0d sets `"regions": ["sin1"]`. Functions had defaulted to iad1, so each call took about 1.7 s. With sin1, customer search takes 0.66 s and `/api/me` 0.15 s.
+- Chrome walkthrough is BLOCKED for two reasons:
+  - The extension isn't connected.
+  - The orchestrator may not type passwords into a production host. The user must log in in the tab themselves; then the orchestrator clicks through.
