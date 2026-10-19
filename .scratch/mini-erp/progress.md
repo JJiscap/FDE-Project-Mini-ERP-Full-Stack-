@@ -63,10 +63,24 @@ The orchestrator updates this file after every merge or decision and commits it.
     - The ER diagram matches `list_tables`.
     - Merged review run: 381 backend tests pass.
     - **Gotcha:** any new table with a `company_id` FK must be added to `reset_company`'s delete list.
-  - **10 invoices/payments: RUNNING** (Sonnet xhigh, `feature/invoices-payments`). It's told to report any new table, for reset_demo.
-  - **12 PDF: RUNNING in parallel with 10** (Sonnet high, `feature/pdf-invoice`).
-    - New backend module `invoice_pdf` serving `GET /api/invoices/{id}/pdf`.
-    - A standalone `DownloadPdfButton.tsx` that is NOT wired in yet. After 10 merges, wire it into the invoice detail page; the agent's report has the exact JSX.
+  - **10 invoices/payments: MERGED** (4d78bb1). Sonnet confirmed; no test changed after red; no new tables.
+    - Merged review run: 445 backend, 159 frontend tests pass.
+    - `record_payment(p_invoice_id, p_amount, p_paid_on, p_method, p_note, p_user_id)`. Overpayment is a 409: "Payment is more than the balance of X THB".
+    - Endpoints: `/api/invoices` (list and detail), `POST /api/invoices/{id}/payments`, `/api/accounting/receivables`.
+  - **12 PDF: MERGED** (8b8707a). Sonnet confirmed.
+    - Renders with fpdf2 (Helvetica, so Thai prints as `?`). `GET /api/invoices/{id}/pdf`.
+    - Merged review run: 459 backend, 164 frontend tests pass.
+    - Wired into the invoice detail header by the orchestrator (b8c8742).
+  - **Building phase is complete except 13b** (design review, demo script, final README).
+  - **Production role check after 10 and 12** (curl, read-only), all matching the spec:
+    - Nok: invoices 200, receivables 403, payment 403.
+    - Fon and Somchai: 200.
+    - Lek: 403 on all.
+    - PDF of a missing invoice: 404 for allowed roles, 403 for Lek.
+  - **Blank `/invoices` once:** one load during the pdf-wire redeploy showed a blank page. Five reloads were fine, with no console errors.
+    - Lesson: **never merge during the demo.**
+    - 13b adds an app-level error boundary.
+  - **13b RUNNING** (`feature/docs-polish`, Sonnet high): design review using the scratchpad screenshots, error boundary, Open-invoices tile wrap, demo script in §8, final README.
   - **Browser US-1 on production: BLOCKED.** The auto-mode classifier denied "Save as Draft" (Modify Shared Resources). Don't work around it. manual.md 14a asks the user to choose:
     - (a) allow a test order, then `reset_demo`
     - (b) the user clicks through it themselves
