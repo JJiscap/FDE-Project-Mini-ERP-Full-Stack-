@@ -139,7 +139,7 @@ export function parseQuantity(text: string): QuantityResult {
   if (!/^-?\d+$/.test(t)) return { ok: false, message: 'Quantity must be a whole number' }
   const value = Number(t)
   if (value <= 0) return { ok: false, message: 'Quantity must be greater than 0' }
-  if (value > MAX_QUANTITY) return { ok: false, message: `Quantity must be ${MAX_QUANTITY} or less` }
+  if (value > MAX_QUANTITY) return { ok: false, message: `Quantity must be ${MAX_QUANTITY.toLocaleString('en-US')} or less` }
   return { ok: true, value }
 }
 
