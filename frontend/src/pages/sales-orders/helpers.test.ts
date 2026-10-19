@@ -74,7 +74,7 @@ describe('quantity', () => {
   })
 
   it('refuses more than a million', () => {
-    expect(parseQuantity('1000001')).toEqual({ ok: false, message: 'Quantity must be 1000000 or less' })
+    expect(parseQuantity('1000001')).toEqual({ ok: false, message: 'Quantity must be 1,000,000 or less' })
   })
 })
 

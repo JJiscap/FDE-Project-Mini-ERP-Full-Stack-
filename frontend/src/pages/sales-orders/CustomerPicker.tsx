@@ -98,7 +98,8 @@ export function CustomerPicker({ value, onChange, disabled, busy }: CustomerPick
         {updating ? (
           <Loader2
             className="absolute top-1/2 right-3 size-4 -translate-y-1/2 animate-spin text-muted-foreground"
-            aria-label="Searching"
+            role="img"
+                aria-label="Searching"
           />
         ) : null}
       </div>
@@ -123,7 +124,7 @@ export function CustomerPicker({ value, onChange, disabled, busy }: CustomerPick
                 <li key={customer.id}>
                   <button
                     type="button"
-                    className="flex min-h-12 w-full flex-col items-start gap-0.5 px-4 py-2.5 text-left hover:bg-accent focus-visible:bg-accent focus-visible:outline-none sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                    className="flex min-h-12 w-full flex-col items-start gap-0.5 px-4 py-2.5 text-left hover:bg-accent focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring focus-visible:outline-none sm:flex-row sm:items-center sm:justify-between sm:gap-4"
                     onClick={() => {
                       onChange(customer)
                       setSearching(false)

@@ -77,16 +77,16 @@ Tables: `companies`, `users`, `customers`, `products`, `stock_movements`, `sales
 
 ## User stories
 
-| Story | Status | Notes |
-| --- | --- | --- |
-| US-1 Sales order → invoice | Done | Confirming Café Lune's 20 × ARB-1KG takes stock from 170 to 150 kg and issues `INV-0001`: 9,000.00 + 630.00 VAT = 9,630.00 THB, due in 30 days. With too little stock it is refused (`409 Not enough stock for ARB-1KG`) and nothing changes. |
-| US-2 Low stock | Done | Low stock badge on the product list and a Low Stock count on the dashboard (ROB-1KG: 35 kg is below its reorder level of 40). |
-| US-3 Roles | Done for the built modules | `401`/`403` enforced on the server for products, customers, stock, sales orders and dashboard. The access-denied page shows on forbidden screens. Invoice and accounting endpoints get the same checks in their tickets. |
-| US-4 Payment | In progress (ticket 10) | Invoices screen, Accounting screen and recording a payment. |
-| US-5 Search | Done | Customer search filters 200 customers on part of a name and pages at 20 rows. |
-| Bonus: PDF invoice | Planned (ticket 12) | Download an invoice as a PDF. |
+All five stories and the bonus are done and live. How to see each one on screen is in [`testing-manual.md`](testing-manual.md), and the 7-minute demo script is its section 8.
 
-This table is updated at the end of the project.
+| Story | Status | What it does |
+| --- | --- | --- |
+| US-1 Sales order → invoice | Done | Sales picks Café Lune, adds 20 × ARB-1KG at 450.00 THB and confirms. On hand goes from 170 kg to 150 kg and `INV-0001` is issued: 9,000.00 + 630.00 VAT = 9,630.00 THB, due in 30 days. A quantity above the stock on hand (for example 200) is refused with `409 Not enough stock for ARB-1KG` and nothing changes: no stock out, no invoice, no number used. Confirm is one Postgres function, all or nothing. |
+| US-2 Low stock | Done | Low stock badge on the product list, and the dashboard Low Stock count (ROB-1KG: 35 kg is below its reorder level of 40). The dashboard tile opens the list filtered to low stock. |
+| US-3 Roles | Done | The server checks the Role on every endpoint: `401` without a token, `403` for the wrong Role. Sales opening the Accounting screen sees the Access denied page and the API returns `403`. Warehouse calling confirm-order directly gets `403`. Invoices are open to Admin, Sales and Accountant. Accounting and recording a payment are Admin and Accountant only. Admin opens every screen. |
+| US-4 Payment | Done | The Accountant records a payment against an open invoice. A full payment (9,630.00 THB) marks it Paid and the dashboard Open Invoices drops by that amount. Partial payments work (the Balance falls and the invoice stays Open), and a payment above the Balance or on a Paid invoice is refused (`409`). Payments are never edited or deleted. |
+| US-5 Search | Done | Customer search filters 200 customers on part of a name or the Tax ID, ignores upper and lower case, answers in about 0.2 s and pages at 20 rows. |
+| Bonus: PDF invoice | Done | **Download PDF** on the invoice screen saves `INV-0001.pdf`: one A4 page with the Siam Bean Co. header and Tax ID, the invoice number, date and due date, Bill To (customer name, address, Tax ID), the lines (SKU, name, quantity with unit, unit price, amount), then Subtotal, VAT 7%, Total, Paid and Balance in `9,630.00 THB` format. It shows the prices copied onto the order, so a later price change never alters it. Limitation: the PDF uses a built-in Latin font, so Thai characters in a name or address print as `?` (the on-screen invoice shows them correctly). |
 
 ## Setup
 
@@ -119,16 +119,20 @@ You need Python 3.12+ with [`uv`](https://docs.astral.sh/uv/), a recent Node.js 
 
 After a reset the dashboard shows Low Stock 1, Stock Value 107,100.00 THB, Sales Today 0.00 THB and Open Invoices 0.
 
+## How to demo
+
+[`testing-manual.md`](testing-manual.md) section 8 is the 7-minute demo script, minute by minute: the pre-flight checklist (reset, which window is logged in as which Role), the exact clicks, the numbers to expect (SO-0001, 170 → 150 kg, INV-0001 = 9,000.00 + 630.00 = 9,630.00 THB, the dashboard before and after the payment), the failing-confirm and `403` demos, what to say, a fallback for every step, and what to drop if time runs out. Sections 1 to 7 of the same file are the full hand-test of every feature.
+
 ## Tests
 
 Tests were written first (red before green) and run against the hosted Supabase project in a throwaway `TEST-<runid>` company with its own four role users, which is cleaned up afterwards. They never touch the Siam Bean demo data ([ADR-0005](docs/adr/0005-tests-run-against-hosted-supabase-in-a-throwaway-company.md)). Backend tests go through the HTTP seam with FastAPI's `TestClient`.
 
 ```bash
-cd backend && uv run pytest -q                                   # 381 passed
-cd frontend && npm run typecheck && npm test && npm run build    # 123 tests passed
+cd backend && uv run pytest -q                                   # 459 passed
+cd frontend && npm run typecheck && npm test && npm run build    # 180 tests passed
 ```
 
-Counts as of 20 Oct 2026, taken from running the suites.
+Counts as of 20 Oct 2026, taken from running the suites on the final branch: 459 backend tests, 180 frontend tests (19 files). The backend suite takes about 8 minutes because it talks to the hosted database. If it prints a burst of "connection is closed" errors, that is the network: run it again.
 
 ## Documentation
 

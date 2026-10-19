@@ -20,11 +20,11 @@
 
 **Branch:** `feature/docs-polish`
 
-- [ ] README has every item in the worksheet's demo checklist that lives in the repo.
-- [ ] `docs/er-diagram.md` matches `list_tables` output: same tables, columns and foreign keys.
-- [ ] Running `reset_demo` twice works. The dashboard afterwards shows Low Stock 1, Stock Value 107,100.00, Sales Today 0.00 and Open Invoices 0.
+- [x] README has every item in the worksheet's demo checklist that lives in the repo.
+- [x] `docs/er-diagram.md` matches `list_tables` output: same tables, columns and foreign keys.
+- [x] Running `reset_demo` twice works. The dashboard afterwards shows Low Stock 1, Stock Value 107,100.00, Sales Today 0.00 and Open Invoices 0.
 - [ ] Every screen at phone width: no horizontal scroll, no console errors, empty states present, errors say what to fix.
-- [ ] Section 8 of `testing-manual.md` holds a 7-minute demo script, minute by minute, with the exact clicks and expected numbers.
+- [x] Section 8 of `testing-manual.md` holds a 7-minute demo script, minute by minute, with the exact clicks and expected numbers.
 
 ## Progress notes
 
@@ -42,3 +42,20 @@ Gotchas:
 - Extras created during testing are DELETED by the reset (not deactivated): the app never deletes, but this script is the sanctioned exception for demo data, and a deactivated leftover would still show in search during the demo.
 - Tests pass `total_customers=5` to keep runs fast; one test checks the default of 200.
 - Any new table with a `company_id` FK must be added to the delete list in `reset_company` (children first) or the reset will fail on a foreign key.
+
+## Progress notes (Part B)
+
+**Part B done on `feature/docs-polish` (not merged).** The phone-width box above stays open on purpose: the orchestrator's 375 px screenshots covered sales orders, invoices, a customer and Access denied; the other screens were reviewed in code only. Re-check on the live URL after the merge deploys.
+
+Done:
+- Error handling: `AppErrorBoundary` around the whole app (`main.tsx`), `ReloadNotice` ("Reload page", wording for a new version after a redeploy), `installChunkReload` (reload once on `vite:preloadError`, no loop), and `AccessBoundary` shows the reload notice for a failed lazy page (React caches a failed lazy import, so "Try again" cannot work). Tests: `components/AppErrorBoundary.test.tsx`.
+- Dashboard Open invoices tile: count on one line, amount on the next, `whitespace-nowrap` (`model.ts` `openInvoicesParts`, `DashboardTiles.tsx`).
+- Accessibility: shared `SegmentedControl` (roving tabindex and arrow keys) replaces two hand-made radio groups (stock movement type, payment method); field errors in the stock form and Payment dialog are `role="alert"` and tied to their field with `aria-describedby`; visible focus ring in the customer and product pickers; the "Searching" spinner has `role="img"`.
+- Invalid HTML: `ConfirmDialog` description is now a `div`, because an `ErrorAlert` (a `div`) inside Radix's `<p>` triggered React's nesting warning (test written red first).
+- Copy: "Quantity must be 1,000,000 or less" (was 1000000).
+- `testing-manual.md`: section 8 (7-minute script, pre-flight, fallbacks, drop order, Q&A cheat sheet); the Open invoices tile wording in sections 1, 1b, 1c, 7a changed to the new two-line layout.
+- README: US table with real status, the PDF contents and Thai limitation, test counts (459 backend, 180 frontend), "How to demo". `frontend/README.md`: new components. `docs/er-diagram.md` already described `confirm_sales_order` and `record_payment` correctly (no table changed since Part A), so it is untouched.
+
+Tests changed on purpose: `DashboardTiles.test.tsx` (count and amount are now separate elements), `sales-orders/helpers.test.ts` (max quantity message).
+
+Not done (bigger than a polish pass): an "unsaved changes" guard on forms; the Products pager is hand-written and the other lists use `pagerLabel` (same look, two code paths); no automated colour-contrast test (contrast relies on the token notes in `index.css`); no real-browser keyboard pass (only code review and unit tests).

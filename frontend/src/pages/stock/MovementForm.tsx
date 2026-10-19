@@ -3,13 +3,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { ErrorAlert } from '@/components/ErrorAlert'
+import { SegmentedControl } from '@/components/SegmentedControl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { api } from '@/lib/api'
-import { cn } from '@/lib/utils'
 import {
   parseQuantity,
   productLabel,
@@ -105,23 +105,7 @@ export function MovementForm({ products, productId, onProductChange }: MovementF
 
   return (
     <form onSubmit={onSubmit} noValidate className="space-y-4 rounded-lg border bg-card p-4 sm:p-6">
-      <div role="radiogroup" aria-label="Movement type" className="grid grid-cols-3 gap-1 rounded-lg bg-muted p-1">
-        {TYPES.map((t) => (
-          <button
-            key={t.value}
-            type="button"
-            role="radio"
-            aria-checked={type === t.value}
-            onClick={() => changeType(t.value)}
-            className={cn(
-              'min-h-11 rounded-md px-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-              type === t.value ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl ariaLabel="Movement type" options={TYPES} value={type} onChange={changeType} />
       <p className="text-sm text-muted-foreground">{copy.hint}</p>
 
       {record.isError ? <ErrorAlert error={record.error} /> : null}
@@ -136,7 +120,12 @@ export function MovementForm({ products, productId, onProductChange }: MovementF
             record.reset()
           }}
         >
-          <SelectTrigger id="stock-product" className="h-10 w-full" aria-invalid={Boolean(fieldErrors.product)}>
+          <SelectTrigger
+            id="stock-product"
+            className="h-10 w-full"
+            aria-invalid={Boolean(fieldErrors.product)}
+            aria-describedby={fieldErrors.product ? 'stock-product-error' : undefined}
+          >
             <SelectValue placeholder="Choose a Product" />
           </SelectTrigger>
           <SelectContent>
@@ -147,7 +136,11 @@ export function MovementForm({ products, productId, onProductChange }: MovementF
             ))}
           </SelectContent>
         </Select>
-        {fieldErrors.product ? <p className="text-sm text-destructive">{fieldErrors.product}</p> : null}
+        {fieldErrors.product ? (
+          <p id="stock-product-error" role="alert" className="text-sm text-destructive">
+            {fieldErrors.product}
+          </p>
+        ) : null}
       </div>
 
       <div className="space-y-2">
@@ -168,7 +161,7 @@ export function MovementForm({ products, productId, onProductChange }: MovementF
           aria-describedby={fieldErrors.quantity ? 'stock-quantity-error' : undefined}
         />
         {fieldErrors.quantity ? (
-          <p id="stock-quantity-error" className="text-sm text-destructive">
+          <p id="stock-quantity-error" role="alert" className="text-sm text-destructive">
             {fieldErrors.quantity}
           </p>
         ) : null}
@@ -189,7 +182,7 @@ export function MovementForm({ products, productId, onProductChange }: MovementF
           aria-describedby={fieldErrors.reason ? 'stock-reason-error' : undefined}
         />
         {fieldErrors.reason ? (
-          <p id="stock-reason-error" className="text-sm text-destructive">
+          <p id="stock-reason-error" role="alert" className="text-sm text-destructive">
             {fieldErrors.reason}
           </p>
         ) : null}

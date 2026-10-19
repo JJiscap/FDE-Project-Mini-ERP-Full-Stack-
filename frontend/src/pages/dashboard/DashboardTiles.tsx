@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { formatTHB } from '@/lib/format'
 import type { Role } from '@/lib/permissions'
 import { cn } from '@/lib/utils'
-import { openInvoicesHref, openInvoicesText } from './model'
+import { openInvoicesHref, openInvoicesParts } from './model'
 
 /** `GET /api/dashboard` */
 export interface DashboardData {
@@ -52,6 +52,17 @@ function Tile({ label, icon: Icon, value, href, tone = 'default' }: TileProps) {
   )
 }
 
+/** Count on one line, amount on the next, so "9,630.00 THB" never breaks between the number and THB. */
+function OpenInvoicesValue({ open }: { open: DashboardData['open_invoices'] }) {
+  const { count, amount } = openInvoicesParts(open)
+  return (
+    <>
+      <span className="block">{count}</span>
+      <span className="block whitespace-nowrap text-base font-medium text-muted-foreground sm:text-lg">{amount}</span>
+    </>
+  )
+}
+
 function TileSkeleton() {
   return <Skeleton data-testid="tile-skeleton" className="h-7 w-3/4" />
 }
@@ -83,7 +94,7 @@ export function DashboardTiles({ data, role }: DashboardTilesProps) {
       <Tile
         label="Open invoices"
         icon={Landmark}
-        value={data ? openInvoicesText(data.open_invoices) : <TileSkeleton />}
+        value={data ? <OpenInvoicesValue open={data.open_invoices} /> : <TileSkeleton />}
         href={openInvoicesHref(role)}
       />
       <Tile

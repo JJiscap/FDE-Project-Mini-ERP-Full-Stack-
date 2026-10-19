@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { ErrorAlert } from '@/components/ErrorAlert'
+import { SegmentedControl } from '@/components/SegmentedControl'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -16,7 +17,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { api } from '@/lib/api'
 import { formatTHB, todayInBangkok } from '@/lib/format'
-import { cn } from '@/lib/utils'
 import { cacheInvoice, refreshAfterPayment, type InvoiceDetail } from '@/pages/invoices/helpers'
 import {
   PAYMENT_METHODS,
@@ -106,9 +106,13 @@ export function PaymentDialog({ invoice, onClose }: PaymentDialogProps) {
                 record.reset()
               }}
               aria-invalid={Boolean(errors.amount)}
-              aria-describedby="payment-amount-hint"
+              aria-describedby={errors.amount ? 'payment-amount-error payment-amount-hint' : 'payment-amount-hint'}
             />
-            {errors.amount ? <p className="text-sm text-destructive">{errors.amount}</p> : null}
+            {errors.amount ? (
+              <p id="payment-amount-error" role="alert" className="text-sm text-destructive">
+                {errors.amount}
+              </p>
+            ) : null}
             <p id="payment-amount-hint" className="text-sm text-muted-foreground" aria-live="polite">
               {preview !== null
                 ? `Balance after this payment: ${formatTHB(preview)}.${preview === '0.00' ? ' The Invoice will be marked Paid.' : ''}`
@@ -127,37 +131,25 @@ export function PaymentDialog({ invoice, onClose }: PaymentDialogProps) {
                 setErrors((x) => ({ ...x, paid_on: undefined }))
               }}
               aria-invalid={Boolean(errors.paid_on)}
+              aria-describedby={errors.paid_on ? 'payment-date-error' : undefined}
             />
-            {errors.paid_on ? <p className="text-sm text-destructive">{errors.paid_on}</p> : null}
+            {errors.paid_on ? (
+              <p id="payment-date-error" role="alert" className="text-sm text-destructive">
+                {errors.paid_on}
+              </p>
+            ) : null}
           </div>
 
           <div className="space-y-2">
             <span id="payment-method-label" className="text-sm leading-none font-medium">
               Method
             </span>
-            <div
-              role="radiogroup"
-              aria-labelledby="payment-method-label"
-              className="grid grid-cols-3 gap-1 rounded-lg bg-muted p-1"
-            >
-              {PAYMENT_METHODS.map((m) => (
-                <button
-                  key={m.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={method === m.value}
-                  onClick={() => setMethod(m.value)}
-                  className={cn(
-                    'min-h-11 rounded-md px-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-                    method === m.value
-                      ? 'bg-card text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground',
-                  )}
-                >
-                  {m.label}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl
+              labelledBy="payment-method-label"
+              options={PAYMENT_METHODS}
+              value={method}
+              onChange={setMethod}
+            />
           </div>
 
           <div className="space-y-2">
