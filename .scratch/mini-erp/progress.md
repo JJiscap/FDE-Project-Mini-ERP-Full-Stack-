@@ -46,9 +46,14 @@ The orchestrator updates this file after every merge or decision and commits it.
     - `GET /api/stock/movements?product_id` returns `balance_after`. `GET /api/stock/products` feeds the picker.
     - A refused movement rolls back the doc counter.
   - None of the agents could log in through a browser. The UI is verified only by typecheck, unit tests and build. The orchestrator must click through it via Chrome MCP after the deploy (manual.md 13).
+- **Wave 3: RUNNING.**
+  - `feature/sales-orders` (08, xhigh):
+    - Line-level endpoints. Price is frozen on add, and adding the same product again merges into its line.
+    - `vat_for()` lives in `app/core/money.py`.
+    - The detail includes `invoice: null`, and there's an `<OrderActions>` slot for 09.
+  - `feature/dashboard` (11, high): `GET /api/dashboard`. Invoice tests set up rows via `conn`.
 - **Next:**
-  - W3: 08 draft sales orders (xhigh), with 11 dashboard in parallel.
-  - Then 09 confirm (fresh agent on `feature/sales-orders`).
+  - 09 confirm: a FRESH agent on `feature/sales-orders` after 08 reports. It reads 08's progress notes. After 09 merges, add an end-to-end dashboard test.
   - 04 deploy as soon as `vercel whoami` succeeds.
 - **Ticket 04 (deploy)** starts as soon as `vercel whoami` shows the user is logged in.
 
