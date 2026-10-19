@@ -11,8 +11,14 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from functools import lru_cache
+from urllib.parse import urlparse
 
 from dotenv import find_dotenv, load_dotenv
+from psycopg.conninfo import make_conninfo
+
+# This project's Supabase transaction pooler (Singapore). Only used when
+# DATABASE_URL is empty; see _database_url().
+_DEFAULT_POOLER_HOST = "aws-0-ap-southeast-1.pooler.supabase.com"
 
 
 class ConfigError(RuntimeError):
@@ -24,6 +30,32 @@ def _require(name: str) -> str:
     if not value:
         raise ConfigError(f"Environment variable {name} is not set. See .env.example.")
     return value
+
+
+def _database_url(supabase_url: str) -> str:
+    """The Postgres connection string.
+
+    Normally `DATABASE_URL` (the transaction pooler URI from the Supabase
+    dashboard). If it is blank, build the pooler connection from the project
+    ref in SUPABASE_URL and POSTGRES_PASSWORD, so a half-filled .env still works.
+    """
+    explicit = os.environ.get("DATABASE_URL", "").strip()
+    if explicit:
+        return explicit
+    password = os.environ.get("POSTGRES_PASSWORD", "").strip()
+    if not password:
+        raise ConfigError(
+            "Set DATABASE_URL (Supabase transaction pooler URI) or POSTGRES_PASSWORD. "
+            "See .env.example."
+        )
+    project_ref = (urlparse(supabase_url).hostname or "").split(".")[0]
+    return make_conninfo(
+        host=os.environ.get("SUPABASE_POOLER_HOST", "").strip() or _DEFAULT_POOLER_HOST,
+        port=6543,
+        dbname="postgres",
+        user=f"postgres.{project_ref}",
+        password=password,
+    )
 
 
 @dataclass(frozen=True)
@@ -50,5 +82,5 @@ def get_settings() -> Settings:
         supabase_secret_key=os.environ.get("SUPABASE_SECRET_KEY", "").strip(),
         supabase_jwks_url=os.environ.get("SUPABASE_JWKS_URL", "").strip()
         or f"{supabase_url}/auth/v1/.well-known/jwks.json",
-        database_url=_require("DATABASE_URL"),
+        database_url=_database_url(supabase_url),
     )
