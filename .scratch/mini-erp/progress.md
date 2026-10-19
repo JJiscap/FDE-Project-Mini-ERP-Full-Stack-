@@ -52,9 +52,24 @@ The orchestrator updates this file after every merge or decision and commits it.
     - The merged review run: 322 backend tests and 117 frontend tests pass; build and `check:bundle` are clean.
     - API: `/api/sales-orders` list, create, detail, PATCH customer, lines POST/PATCH/DELETE, `/cancel`. 409 messages are human-readable.
     - Quantity is capped at 1,000,000.
-  - **09 confirm: RUNNING** (fresh Sonnet xhigh on `feature/sales-orders`).
-    - Includes the `confirm_sales_order` migration, `POST /{id}/confirm` and the Confirm UI in `OrderActions.tsx`.
-    - Also adds the end-to-end US-1 → dashboard test owed by ticket 11.
+  - **09 confirm: MERGED** (2b6be50). Sonnet confirmed; no test changed after red.
+    - Merged review run: 366 backend, 123 frontend tests pass; `check:bundle` clean.
+    - `confirm_sales_order(p_order_id bigint, p_user_id uuid) returns bigint` (the invoice id).
+    - The sale movement's `ref_doc` is the **INV number**, per spec line 180. The SO number goes in `reason`. Kept as is.
+    - The end-to-end US-1 → dashboard test is included.
+  - **13a: MERGED** (acf2f23).
+    - `reset_demo` deletes and restores; the guard allows only Siam Bean or `TEST-*`. It was run once on production; the demo is fresh.
+    - README written. US-1 updated to Done in 2c15e68.
+    - The ER diagram matches `list_tables`.
+    - Merged review run: 381 backend tests pass.
+    - **Gotcha:** any new table with a `company_id` FK must be added to `reset_company`'s delete list.
+  - **10 invoices/payments: RUNNING** (Sonnet xhigh, `feature/invoices-payments`). It's told to report any new table, for reset_demo.
+  - **12 PDF: RUNNING in parallel with 10** (Sonnet high, `feature/pdf-invoice`).
+    - New backend module `invoice_pdf` serving `GET /api/invoices/{id}/pdf`.
+    - A standalone `DownloadPdfButton.tsx` that is NOT wired in yet. After 10 merges, wire it into the invoice detail page; the agent's report has the exact JSX.
+  - **Browser US-1 on production: BLOCKED.** The auto-mode classifier denied "Save as Draft" (Modify Shared Resources). Don't work around it. manual.md 14a asks the user to choose:
+    - (a) allow a test order, then `reset_demo`
+    - (b) the user clicks through it themselves
   - All old agent worktrees were removed; the branches remain on origin.
   - `feature/dashboard` (11): **MERGED** (6c7e0be).
     - Sonnet confirmed. Tests are unchanged since red (bb1a810).

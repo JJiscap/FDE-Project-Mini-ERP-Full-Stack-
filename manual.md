@@ -51,4 +51,7 @@ Claude does everything else. Tick each box when it's done. Run commands prefixed
 
 ## Found while building (Wave 3, confirm order)
 
+- [ ] **14a. Decide: may Claude write test data to production?** Claude's automatic safety check blocked "Save as Draft" in the browser because it writes to the live database. Claude got as far as Café Lune + 20 × ARB-1KG = 9,630.00 THB on the new-order screen. Pick one:
+  - **(a)** Tell Claude "you may save and confirm a test order on production, then run reset_demo". You may get a permission prompt to approve.
+  - **(b)** Do step 14 yourself, then ask Claude to run `reset_demo`.
 - [ ] **14. Click through Confirm order once in a real browser.** The agent could not log in, so the Confirm button, its dialog, the short-stock message and the Invoice link are verified only by typecheck, screen tests (jsdom) and build. After `scripts.reset_demo`, follow `testing-manual.md` section 1b as Nok, at desktop width and at 375 px (dialog fits, no sideways scroll). Note the **Open INV-0001** link leads to the Invoices stub ("Coming soon") until ticket 10 lands.
