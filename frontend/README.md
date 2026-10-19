@@ -23,7 +23,7 @@ src/
   App.tsx                 providers, router, guards
   pages/<module>/index.tsx  YOUR folder: default-export the page component
   pages/login, pages/system   login and 404
-  components/             shared: PageHeader, EmptyState, ErrorAlert, StatusBadge, Money, DataTable, ConfirmDialog, PageSpinner
+  components/             shared: PageHeader, EmptyState, ErrorAlert, StatusBadge, Money, DataTable, ConfirmDialog, SegmentedControl, PageSpinner, AppErrorBoundary
   components/ui/          shadcn primitives (button, input, form, select, sheet, ...)
   components/layout/      AppLayout (sidebar / phone drawer), SidebarContent
   auth/                   AuthProvider (useAuth), useMe / useCurrentUser, guards
@@ -144,6 +144,8 @@ In tables use `<Money value={row.total} />` (right-aligned, tabular digits, neve
 | `Money` | THB amounts |
 | `DataTable` | Table from 768px, cards on phones. Columns: `header`, `cell`, `align: 'right'` for numbers, `isTitle` for the main text. Pass `empty={<EmptyState .../>}` and `getRowHref` to link rows. Keep buttons out of phone cards |
 | `ConfirmDialog` | Before irreversible actions. Title names the thing ("Confirm SO-0012?"), say what happens, label the button with the action. Parent closes it, so it stays open while loading or when the API refuses |
+| `SegmentedControl` | 2 to 3 big buttons, one chosen (Stock-in / Stock-out / Adjustment, payment method). A radio group: Tab enters once, arrow keys move the choice |
+| `AppErrorBoundary` | Wraps the whole app in `main.tsx`: a render error shows the brand and a **Reload page** button, never a blank page. A failed lazy chunk (after a redeploy) says a new version is ready. `installChunkReload` reloads once on `vite:preloadError` |
 | `PageSpinner` | Loading a whole page or section |
 | `AccessDenied` | Rendered for you by guards and the 403 boundary |
 
