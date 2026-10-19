@@ -18,6 +18,10 @@ function jsonResponse(status: number, body?: unknown) {
 
 const fetchMock = vi.fn()
 
+function unexpectedSuccess(): never {
+  throw new Error('expected the request to fail')
+}
+
 beforeEach(() => {
   getSession.mockResolvedValue({ data: { session: { access_token: 'token-123' } } })
   signOut.mockResolvedValue({ error: null })
@@ -68,7 +72,7 @@ describe('api', () => {
   it('throws ApiError with the detail message from the API', async () => {
     fetchMock.mockResolvedValue(jsonResponse(409, { detail: 'Not enough stock for ARB-1KG' }))
 
-    const err = await api.post('/sales-orders/1/confirm').catch((e) => e)
+    const err = await api.post('/sales-orders/1/confirm').then(unexpectedSuccess, (e: ApiError) => e)
 
     expect(err).toBeInstanceOf(ApiError)
     expect(err.status).toBe(409)
@@ -81,7 +85,7 @@ describe('api', () => {
       jsonResponse(422, { detail: [{ loc: ['body', 'price'], msg: 'Price must be 0 or more' }] }),
     )
 
-    const err = await api.post('/products', {}).catch((e) => e)
+    const err = await api.post('/products', {}).then(unexpectedSuccess, (e: ApiError) => e)
 
     expect(err.detail).toBe('Price must be 0 or more')
   })
@@ -89,7 +93,7 @@ describe('api', () => {
   it('signs out and reports 401 when the API says the token is not valid', async () => {
     fetchMock.mockResolvedValue(jsonResponse(401, { detail: 'Not authenticated' }))
 
-    const err = await api.get('/products').catch((e) => e)
+    const err = await api.get('/products').then(unexpectedSuccess, (e: ApiError) => e)
 
     expect(err.status).toBe(401)
     expect(signOut).toHaveBeenCalledTimes(1)
@@ -98,7 +102,7 @@ describe('api', () => {
   it('signs out without calling the API when there is no session', async () => {
     getSession.mockResolvedValue({ data: { session: null } })
 
-    const err = await api.get('/products').catch((e) => e)
+    const err = await api.get('/products').then(unexpectedSuccess, (e: ApiError) => e)
 
     expect(err.status).toBe(401)
     expect(fetchMock).not.toHaveBeenCalled()
@@ -108,7 +112,7 @@ describe('api', () => {
   it('keeps the user signed in on 403 so the page can show Access denied', async () => {
     fetchMock.mockResolvedValue(jsonResponse(403, { detail: 'Your role cannot do this' }))
 
-    const err = await api.get('/accounting/receivables').catch((e) => e)
+    const err = await api.get('/accounting/receivables').then(unexpectedSuccess, (e: ApiError) => e)
 
     expect(err.status).toBe(403)
     expect(err.detail).toBe('Your role cannot do this')
@@ -118,7 +122,7 @@ describe('api', () => {
   it('gives a plain message when the server cannot be reached', async () => {
     fetchMock.mockRejectedValue(new TypeError('Failed to fetch'))
 
-    const err = await api.get('/products').catch((e) => e)
+    const err = await api.get('/products').then(unexpectedSuccess, (e: ApiError) => e)
 
     expect(err).toBeInstanceOf(ApiError)
     expect(err.status).toBe(0)
@@ -128,7 +132,7 @@ describe('api', () => {
   it('falls back to a readable message when the error body is not JSON', async () => {
     fetchMock.mockResolvedValue(new Response('Bad gateway', { status: 502 }))
 
-    const err = await api.get('/products').catch((e) => e)
+    const err = await api.get('/products').then(unexpectedSuccess, (e: ApiError) => e)
 
     expect(err.status).toBe(502)
     expect(err.detail).toMatch(/something went wrong/i)
