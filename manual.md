@@ -36,3 +36,7 @@ Claude does everything else. Tick each box when it's done. Run commands prefixed
   - API function: `DATABASE_URL` (the pooler URI from step 0, with the real password), `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_JWKS_URL`.
   - `SUPABASE_SECRET_KEY` is only used by the local seed script and is not needed on Vercel.
 - [ ] **12. (Optional) Leaked password protection.** The Supabase security advisor shows one WARN, "Leaked Password Protection Disabled". It's a dashboard-only switch and may need a paid plan: Authentication → Sign In / Providers → Email → Password security. The demo passwords are shared on purpose, so this is cosmetic. Nothing at ERROR level remains.
+
+## Found while building (Wave 2, customers)
+
+- [ ] **13. Click through the Customers screens once in a real browser.** The agent could not log in to check them visually. Follow `testing-manual.md` section 4 at desktop width and at 375 px: search, pager, New / Edit / Deactivate as Nok, read-only view as Fon.

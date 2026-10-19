@@ -1,17 +1,16 @@
-import { Users } from 'lucide-react'
-import { EmptyState } from '@/components/EmptyState'
-import { PageHeader } from '@/components/PageHeader'
+import { Route, Routes } from 'react-router'
+import { CustomerDetail } from './CustomerDetail'
+import { EditCustomer, NewCustomer } from './CustomerForm'
+import { CustomerList } from './CustomerList'
 
-// STUB: the customers ticket replaces this file. Only edit inside src/pages/customers/.
+/** Customers: list with search and pager, a Customer, and the new / edit forms (Admin and Sales). */
 export default function CustomersPage() {
   return (
-    <>
-      <PageHeader title="Customers" description="The cafes you sell to, with Tax ID and Payment Terms." />
-      <EmptyState
-        icon={Users}
-        title="Coming soon"
-        description="The customer list will appear here once it is built."
-      />
-    </>
+    <Routes>
+      <Route index element={<CustomerList />} />
+      <Route path="new" element={<NewCustomer />} />
+      <Route path=":id" element={<CustomerDetail />} />
+      <Route path=":id/edit" element={<EditCustomer />} />
+    </Routes>
   )
 }
