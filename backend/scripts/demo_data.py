@@ -3,7 +3,7 @@
 Shared by `scripts.seed`, `scripts.reset_demo` and the pytest harness
 (`tests/conftest.py`). The 4 products and 3 customers come straight from
 docs/scenario.md; the rest of the 200 customers are generated fictional cafés.
-Loading is idempotent: it never changes or duplicates what already exists.
+Loading (`load_master_data`) is idempotent: it never changes or duplicates what already exists.
 """
 
 from __future__ import annotations
@@ -88,65 +88,81 @@ def generated_cafes(count: int) -> list[CustomerSpec]:
     return cafes
 
 
-def load_products(conn: psycopg.Connection, company_id: int) -> None:
-    """Insert the 4 sample products and their Opening Stock movements, once."""
-    with conn.transaction():
-        for p in PRODUCTS:
-            conn.execute(
-                """
-                insert into public.products
-                    (company_id, sku, name, unit, cost, price, reorder_level)
-                values (%s, %s, %s, %s, %s, %s, %s)
-                on conflict (company_id, sku) do nothing
-                """,
-                (company_id, p.sku, p.name, p.unit, p.cost, p.price, p.reorder_level),
-            )
-            conn.execute(
-                """
-                insert into public.stock_movements
-                    (company_id, product_id, quantity, movement_type, ref_doc)
-                select pr.company_id, pr.id, %s, 'opening', 'OPENING'
-                  from public.products pr
-                 where pr.company_id = %s and pr.sku = %s
-                   and not exists (
-                       select 1 from public.stock_movements m
-                        where m.product_id = pr.id and m.movement_type = 'opening'
-                   )
-                """,
-                (p.opening_stock, company_id, p.sku),
-            )
+def _insert_products(conn: psycopg.Connection, company_id: int) -> None:
+    """The 4 sample products, then their Opening Stock movements. Existing rows are left alone."""
+    conn.execute(
+        """
+        insert into public.products (company_id, sku, name, unit, cost, price, reorder_level)
+        select %(company)s, v.sku, v.name, v.unit, v.cost, v.price, v.reorder_level
+          from unnest(
+                   %(skus)s::text[], %(names)s::text[], %(units)s::text[],
+                   %(costs)s::numeric[], %(prices)s::numeric[], %(reorder_levels)s::int[]
+               ) as v(sku, name, unit, cost, price, reorder_level)
+        on conflict (company_id, sku) do nothing
+        """,
+        {
+            "company": company_id,
+            "skus": [p.sku for p in PRODUCTS],
+            "names": [p.name for p in PRODUCTS],
+            "units": [p.unit for p in PRODUCTS],
+            "costs": [p.cost for p in PRODUCTS],
+            "prices": [p.price for p in PRODUCTS],
+            "reorder_levels": [p.reorder_level for p in PRODUCTS],
+        },
+    )
+    conn.execute(
+        """
+        insert into public.stock_movements
+            (company_id, product_id, quantity, movement_type, ref_doc)
+        select pr.company_id, pr.id, o.quantity, 'opening', 'OPENING'
+          from unnest(%(skus)s::text[], %(quantities)s::int[]) as o(sku, quantity)
+          join public.products pr on pr.company_id = %(company)s and pr.sku = o.sku
+         where not exists (
+               select 1 from public.stock_movements m
+                where m.product_id = pr.id and m.movement_type = 'opening'
+         )
+        """,
+        {
+            "company": company_id,
+            "skus": [p.sku for p in PRODUCTS],
+            "quantities": [p.opening_stock for p in PRODUCTS],
+        },
+    )
 
 
-def load_customers(conn: psycopg.Connection, company_id: int, total: int = 200) -> None:
-    """Make sure the company has the 3 sample customers plus generated cafés up to `total`."""
+def _insert_customers(conn: psycopg.Connection, company_id: int, total: int) -> None:
+    """The 3 sample customers plus generated cafés up to `total`. Existing names are left alone."""
     specs = (list(SAMPLE_CUSTOMERS) + generated_cafes(max(total - len(SAMPLE_CUSTOMERS), 0)))[:total]
-    with conn.transaction():
-        conn.execute(
-            """
-            insert into public.customers
-                (company_id, name, tax_id, payment_terms_days, address, phone)
-            select %(company)s, v.name, v.tax_id, v.terms, v.address, v.phone
-              from unnest(
-                       %(names)s::text[], %(tax_ids)s::text[], %(terms)s::int[],
-                       %(addresses)s::text[], %(phones)s::text[]
-                   ) as v(name, tax_id, terms, address, phone)
-             where not exists (
-                   select 1 from public.customers c
-                    where c.company_id = %(company)s and c.name = v.name
-             )
-            """,
-            {
-                "company": company_id,
-                "names": [s.name for s in specs],
-                "tax_ids": [s.tax_id for s in specs],
-                "terms": [s.payment_terms_days for s in specs],
-                "addresses": [s.address for s in specs],
-                "phones": [s.phone for s in specs],
-            },
-        )
+    conn.execute(
+        """
+        insert into public.customers
+            (company_id, name, tax_id, payment_terms_days, address, phone)
+        select %(company)s, v.name, v.tax_id, v.terms, v.address, v.phone
+          from unnest(
+                   %(names)s::text[], %(tax_ids)s::text[], %(terms)s::int[],
+                   %(addresses)s::text[], %(phones)s::text[]
+               ) as v(name, tax_id, terms, address, phone)
+         where not exists (
+               select 1 from public.customers c
+                where c.company_id = %(company)s and c.name = v.name
+         )
+        """,
+        {
+            "company": company_id,
+            "names": [s.name for s in specs],
+            "tax_ids": [s.tax_id for s in specs],
+            "terms": [s.payment_terms_days for s in specs],
+            "addresses": [s.address for s in specs],
+            "phones": [s.phone for s in specs],
+        },
+    )
 
 
 def load_master_data(conn: psycopg.Connection, company_id: int, total_customers: int = 200) -> None:
-    """Products with Opening Stock, then customers. Safe to run again."""
-    load_products(conn, company_id)
-    load_customers(conn, company_id, total_customers)
+    """The 4 sample products with Opening Stock and `total_customers` customers, in one transaction.
+
+    Safe to run again: it never changes or duplicates what already exists.
+    """
+    with conn.transaction():
+        _insert_products(conn, company_id)
+        _insert_customers(conn, company_id, total_customers)

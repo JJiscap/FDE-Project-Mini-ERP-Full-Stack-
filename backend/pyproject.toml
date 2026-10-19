@@ -17,6 +17,7 @@ package = false
 
 [dependency-groups]
 dev = [
+    "fastapi-cli[standard]>=0.0.32",
     "httpx2>=2.14.0",
     "pytest>=9.1.1",
 ]
