@@ -1,9 +1,10 @@
 # ER diagram
 
-The real tables of the Siam Bean Mini ERP, as created by the migrations in `supabase/migrations/` (checked against Supabase `list_tables`). Every business table carries `company_id`, `created_by`, `created_at` and `updated_at`; `created_by` is omitted from the boxes below to keep the diagram readable, and every `created_by` points to `users`. Money columns are `numeric(12,2)`.
+The real tables of the Siam Bean Mini ERP, as created by the migrations in `supabase/migrations/` (checked against Supabase `list_tables` for the `public` schema on 20 Oct 2026: 10 tables, same columns and foreign keys). Every business table carries `company_id`, `created_by`, `created_at` and `updated_at`; `created_by` is omitted from the boxes below to keep the diagram readable, and every `created_by` points to `users`. Money columns are `numeric(12,2)`. `auth_users` is Supabase's own `auth.users` table; `users.id` is a foreign key to it with `on delete cascade`.
 
 ```mermaid
 erDiagram
+    auth_users ||--|| users : "is the login of"
     companies ||--o{ users : "has"
     companies ||--o{ customers : "owns"
     companies ||--o{ products : "owns"
@@ -28,6 +29,9 @@ erDiagram
     users ||--o{ invoices : "created_by"
     users ||--o{ payments : "created_by"
 
+    auth_users {
+        uuid id PK "Supabase Auth (schema auth, not public)"
+    }
     companies {
         bigint id PK
         text name UK
