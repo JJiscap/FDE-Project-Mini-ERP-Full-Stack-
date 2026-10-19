@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '## Context restored after compaction: read before continuing'; echo 'You are the ORCHESTRATOR. Rules: CLAUDE.md. Spawn only Sonnet subagents (one ticket each, worktree). Never read subagent transcripts. Update .scratch/mini-erp/progress.md after every merge.'; echo; cat \"$CLAUDE_PROJECT_DIR/.scratch/mini-erp/progress.md\" 2>/dev/null || echo '(progress.md not found)'",
+            "timeout": 10,
+            "statusMessage": "Restoring progress ledger"
+          }
+        ]
+      }
+    ]
+  }
+}
