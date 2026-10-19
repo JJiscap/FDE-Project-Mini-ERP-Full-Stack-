@@ -43,7 +43,10 @@ The numbers must agree on every screen. Any screen that disagrees is a bug.
 | Confirm an order for 200 × ARB-1KG (only 170 on hand) | Message **"Not enough stock for ARB-1KG"**. Stock, order status and invoice numbers are unchanged; the next successful invoice is still the next number |
 | Product price −1 | "Price must be 0 or more" |
 | Product with an existing SKU (ARB-1KG) | Message saying the SKU already exists |
-| Customer without a tax ID | "Tax ID is required" |
+| Customer without a tax ID (New customer form, leave Tax ID empty or spaces) | "Tax ID is required". Nothing is saved. Same message from the API (`422`) |
+| Customer with Payment Terms −1 (or `payment_terms_days: -1` in the API) | Refused: the form says "Payment Terms must be 0 or more whole days (0 means Cash)"; the API says "Payment terms days must be 0 or more" |
+| Customer with the same Tax ID as another (a branch) | Accepted: Tax ID is not unique |
+| Open a customer as Nok → **Deactivate customer** → confirm | Badge changes to **Inactive**. List filter **Active** hides it, **Inactive** and **All** show it. **Reactivate customer** brings it back. There is no delete anywhere |
 | Order line quantity 0 | "Quantity must be greater than 0" |
 | Stock-out larger than on hand | Rejected, and on hand unchanged |
 | Change ARB-1KG price to 500, then reopen INV-0001 | INV-0001 still shows 450.00 and 9,630.00 |
@@ -123,7 +126,26 @@ Run `cd frontend && npm run dev`, open http://localhost:5173 (start the backend 
 
 ## 4. Search (US-5)
 
-_(pending: customers ticket)_
+Needs the seeded Siam Bean data (200 customers). Log in as Nok (Sales) and open **Customers**.
+
+| Step | Do | Success looks like |
+| --- | --- | --- |
+| 1 | Open Customers | The pager says **1–20 of 200** and the list shows 20 rows, ordered by name. Columns: Name, Tax ID, Payment Terms, Phone. **Next** goes to "21–40 of 200"; **Previous** is disabled on page 1 |
+| 2 | Type `lune` in the search box | About 0.3 s after you stop typing the list shows **Café Lune** only ("1–1 of 1"), Tax ID 0105561000011, Payment Terms **30 days**. The old rows stay visible, slightly faded, until the new ones arrive. Well under 1 second |
+| 3 | Type `LUNE`, then `afé` | Same match: search ignores upper/lower case and matches part of the name |
+| 4 | Search `0105562000022` | **Brew Lab Ari** (Tax ID search), Payment Terms **Cash** |
+| 5 | Search `xyz` | Empty state **No customers match 'xyz'** |
+| 6 | Clear the search, set **Show** to **Inactive** | Empty state "No inactive customers" (nothing deactivated yet) |
+| 7 | **New customer**: name `Café Test`, leave Tax ID empty → **Add customer** | Red text under Tax ID: **Tax ID is required**. Nothing is saved |
+| 8 | Fill Tax ID `0105599999999`, Payment Terms `15` → **Add customer** | You land on the customer page: Payment Terms **15 days**. List shows it (search `Test`) |
+| 9 | **Edit customer**: set Payment Terms to `0`, **Save customer** | Payment Terms shows **Cash** |
+| 10 | **Deactivate customer** → confirm | Badge **Inactive**. In the list, **Active** hides it, **Inactive** shows it with an **Inactive** badge |
+| 11 | Open Customers on a phone (or DevTools at 375 px) | Each customer is a card, no sideways scroll, search, filter and pager still work |
+| 12 | Log in as Fon (Accountant), open Customers and a customer | List and details load, search works. No **New customer**, **Edit** or **Deactivate** buttons, and the page says it is read-only |
+| 13 | Log in as Lek (Warehouse) | No Customers menu item. Opening `/customers` shows **Access denied** |
+| 14 | API check (token from section 3.1): `curl -s -H "Authorization: Bearer $TOKEN" "http://127.0.0.1:8000/api/customers?q=lune"` | `{"items":[{"id":…,"name":"Café Lune",…}],"total":1,"page":1,"page_size":20}`. `page_size=21` is refused with `422`; as Fon, `POST /api/customers` is `403` |
+
+Reset the demo data afterwards (`uv run python -m scripts.reset_demo`) to remove `Café Test`.
 
 ## 5. Low stock (US-2)
 
