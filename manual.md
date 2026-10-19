@@ -48,3 +48,7 @@ Claude does everything else. Tick each box when it's done. Run commands prefixed
   2. Open https://fde-project-mini-erp-full-stack.vercel.app/login and log in yourself, as Nok first.
   3. Tell Claude "logged in". Claude then clicks through every screen at desktop and phone width and reads the console. For other roles, log out and log in as Fon, Lek or Somchai when Claude asks.
 - [ ] **13. Click through the Customers screens once in a real browser.** The agent could not log in to check them visually. Follow `testing-manual.md` section 4 at desktop width and at 375 px: search, pager, New / Edit / Deactivate as Nok, read-only view as Fon.
+
+## Found while building (Wave 3, confirm order)
+
+- [ ] **14. Click through Confirm order once in a real browser.** The agent could not log in, so the Confirm button, its dialog, the short-stock message and the Invoice link are verified only by typecheck, screen tests (jsdom) and build. After `scripts.reset_demo`, follow `testing-manual.md` section 1b as Nok, at desktop width and at 375 px (dialog fits, no sideways scroll). Note the **Open INV-0001** link leads to the Invoices stub ("Coming soon") until ticket 10 lands.

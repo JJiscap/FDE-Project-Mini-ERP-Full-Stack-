@@ -26,10 +26,10 @@ How to test the Mini ERP by hand and what success looks like. Feature agents fil
 | --- | --- | --- | --- |
 | 1 | Anyone | Open the dashboard | Low stock **1** (ROB-1KG: 35 < 40). Stock value **107,100.00 THB**. Sales today (incl. VAT) **0.00 THB**. Open invoices **0 invoices · 0.00 THB** |
 | 2 | Nok (Sales) | Products list | ARB-1KG on hand **170 kg**. ROB-1KG shows a **Low stock** badge |
-| 3 | Nok (Sales) | New order for Café Lune: 20 × ARB-1KG | Unit price pre-filled **450.00 THB**. Line total **9,000.00 THB**. Order number **SO-0001** |
-| 4 | Nok (Sales) | Confirm the order | Status **Confirmed**. Invoice **INV-0001** created |
+| 3 | Nok (Sales) | Sales Orders → **New order** → Customer `lune` → pick Café Lune; Products → ARB-1KG, quantity **20**, **Add to order** → **Save as Draft** | Unit price **450.00 THB per kg** (not editable). Line amount **9,000.00 THB**. Opens order **SO-0001**, status **Draft**. Totals: Subtotal 9,000.00, VAT 7% 630.00, Total **9,630.00 THB** |
+| 4 | Nok (Sales) | On SO-0001 press the primary **Confirm order** button, read the dialog **"Confirm SO-0001?"** (it names Café Lune, "20 kg of ARB-1KG" and **Total 9,630.00 THB (incl. 7% VAT)**), then press **Confirm order** in the dialog | Toast "SO-0001 confirmed. Invoice INV-0001 issued.". Status badge **Confirmed**, a notice "Confirmed on ... This order is final and can't be changed", and a button **Open INV-0001** at the top. The lines have no edit controls and there is no Cancel order button |
 | 5 | Nok (Sales) | Products list | ARB-1KG on hand **150 kg** |
-| 6 | Nok (Sales) | Open INV-0001 | Subtotal **9,000.00 THB**, VAT 7% **630.00 THB**, total **9,630.00 THB**. Due date = invoice date + 30 days |
+| 6 | Nok (Sales) | On SO-0001 press **Open INV-0001** (address `/invoices/<id>`) | The Invoice screen arrives with ticket 10 (until then this link opens the Invoices page, "Coming soon"). Until then check on the order screen: Subtotal **9,000.00 THB**, VAT 7% **630.00 THB**, Total **9,630.00 THB**, and the Due Date in the database: invoice date + 30 days (see 1b step 4). After ticket 10: Invoice shows the same amounts, due date = invoice date + 30 days |
 | 7 | Anyone | Dashboard | Sales today (incl. VAT) **9,630.00 THB**. Open invoices **1 invoice · 9,630.00 THB**. Stock value **100,700.00 THB** |
 | 8 | Fon (Accountant) | Accounting → INV-0001 → record payment 9,630.00 | Status **Paid**. Balance **0.00 THB** |
 | 9 | Anyone | Dashboard | Open invoices **0 invoices · 0.00 THB** (dropped by 9,630.00) |
@@ -38,7 +38,7 @@ The numbers must agree on every screen. Any screen that disagrees is a bug.
 
 ### 1a. Draft Sales Orders (ticket 08)
 
-Step 3 of the golden path, in detail. Sign in as **Nok** (`nok@siambean.test`) after a fresh reset (`scripts.reset_demo`), so the first order is `SO-0001`. Confirm is ticket 09; until then an order stays Draft or becomes Cancelled.
+Step 3 of the golden path, in detail. Sign in as **Nok** (`nok@siambean.test`) after a fresh reset (`scripts.reset_demo`), so the first order is `SO-0001`. Confirming is section 1b: do not confirm anything while walking through 1a unless you reset again afterwards.
 
 | Step | Do | Success looks like |
 | --- | --- | --- |
@@ -62,6 +62,26 @@ Step 3 of the golden path, in detail. Sign in as **Nok** (`nok@siambean.test`) a
 | 18 | Roles: sign in as **Lek (Warehouse)** and **Fon (Accountant)** | **Sales Orders** is not in their menu; opening `/sales-orders` directly shows **Access denied**. With their tokens every `/api/sales-orders...` call answers **403** |
 
 Automated: `cd backend && uv run pytest -q tests/test_sales_orders.py` (67 tests) and `cd frontend && npm test` (screen tests in `src/pages/sales-orders/`).
+
+### 1b. Confirm order → stock out + Invoice (ticket 09)
+
+Steps 3 to 6 of the golden path with the failure cases. **Reset the demo data first** (`cd backend && uv run python -m scripts.reset_demo`), so ARB-1KG is 170 kg and the first Invoice is `INV-0001`. Sign in as **Nok**. Do this in the order shown: step 2 must come before step 3.
+
+| Step | Do | Success looks like |
+| --- | --- | --- |
+| 1 | New order for Café Lune, add **171** × ARB-1KG (the amber "Only 170 kg on hand" warning shows but doesn't block), **Save as Draft** (this is `SO-0001`). Press **Confirm order**, then **Confirm order** in the dialog | A red message **"Not enough stock for ARB-1KG"** inside the dialog, which stays open. Press **Go back**: the order is still **Draft** and still editable. Products list: ARB-1KG still **170 kg**. No Invoice was issued |
+| 2 | Change the line quantity to **20**, tab out, press **Confirm order** and confirm in the dialog | Confirmed as in golden-path step 4. The Invoice is **INV-0001**, not INV-0002: the refused attempt used no number |
+| 3 | Products list | ARB-1KG **150 kg** |
+| 4 | Database check (Supabase SQL editor, read-only): `select number, subtotal, vat, total, invoice_date, due_date, status from invoices;` | One row: **INV-0001**, 9000.00, 630.00, **9630.00**, due_date = invoice_date + **30** days, status open. Invoice date is today's date in Bangkok |
+| 5 | Stock → ARB-1KG history (as Lek or Somchai) | Top row **sale**, document **INV-0001**, **-20 kg**, balance **150 kg**, by Nok |
+| 6 | Reload the confirmed order (`/sales-orders/<id>`) | Read-only: no quantity boxes, no Remove, no Change customer, no Cancel order, no Confirm order. The **Open INV-0001** button is there |
+| 7 | In another tab (or with the API) try `POST /api/sales-orders/<id>/confirm` on it again | **409** `"SO-0001 is confirmed and can't be changed"`. No second Invoice, stock still 150 kg. Editing or cancelling it answers 409 the same way |
+| 8 | New order for Brew Lab Ari with **no lines**, Save as Draft | The **Confirm order** button is disabled with the hint "Add at least one product to confirm.". Through the API: `POST .../confirm` answers **409** `"Add at least one line"` |
+| 9 | Dashboard (any role) | Sales today **9,630.00 THB**, Open invoices **1 invoice · 9,630.00 THB**, Stock value **100,700.00 THB**, Low stock **1** (golden-path step 7) |
+| 10 | Roles: Lek (Warehouse) and Fon (Accountant) cannot see Sales Orders in their menu. With their tokens `POST /api/sales-orders/<id>/confirm` | **403**. Stock and order status unchanged. Somchai (Admin) can Confirm too |
+| 11 | Phone width (375 px) | Confirm order and Cancel order are full-width buttons; the confirmation dialog fits the screen; no sideways scroll |
+
+Automated: `cd backend && uv run pytest -q tests/test_confirm_order.py` (the whole US-1 flow, short stock, roles, the DB function on its own, two people confirming at once) and `tests/test_dashboard.py::test_the_real_us1_flow_through_the_api_moves_all_four_dashboard_tiles`; frontend screen tests in `src/pages/sales-orders/screens.test.tsx` ("Confirm order (US-1)").
 
 ## 2. Business rules (bad input is rejected with a clear message)
 
