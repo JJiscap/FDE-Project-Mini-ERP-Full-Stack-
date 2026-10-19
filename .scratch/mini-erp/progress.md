@@ -119,6 +119,17 @@ The orchestrator updates this file after every merge or decision and commits it.
   - The deployed bundle contains the Supabase URL and key (the build env was set) and no server secret.
   - As Nok: `/api/me`, the dashboard (107,100.00 / low stock 1) and the "lune" search all work. Lek gets 403 on customers.
 - Region fix f9bed0d sets `"regions": ["sin1"]`. Functions had defaulted to iad1, so each call took about 1.7 s. With sin1, customer search takes 0.66 s and `/api/me` 0.15 s.
-- Chrome walkthrough is BLOCKED for two reasons:
-  - The extension isn't connected.
-  - The orchestrator may not type passwords into a production host. The user must log in in the tab themselves; then the orchestrator clicks through.
+- Chrome walkthrough as **Nok, 20 Oct: PASS.** The user logged in; the orchestrator does not type passwords on production.
+  - Dashboard tiles are correct. The Sales nav hides Stock and Accounting, and `/stock` shows Access denied with clear copy.
+  - Products: no New button for Sales, and ROB-1KG has the Low stock badge.
+  - Customers: list loads. Typing "lune" in the order picker filters to Café Lune instantly.
+  - `/sales-orders` shows the empty state.
+  - `/new` with Café Lune and 20 × ARB-1KG shows 9,000.00 + 630.00 = **9,630.00** live. It was NOT saved; the demo data is still 0 orders, 0 invoices, counters unused.
+  - Phone width: the resize is blocked by the maximized window, so pages were checked in 375 px iframes. `/`, `/products`, `/customers` and `/sales-orders/new` have no horizontal scroll, use a hamburger nav and show cards instead of tables.
+  - Console: no errors.
+  - Still to walk:
+    - Fon (invoices and accounting, after 10).
+    - Lek (stock screens, view only).
+    - Somchai (product write).
+    - The real Confirm, after 09, on a reset.
+  - Finding: the login page says "password is in the README", but there's no README until ticket 13.
