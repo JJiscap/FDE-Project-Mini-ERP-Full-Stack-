@@ -4,7 +4,7 @@ How to test the Mini ERP by hand and what success looks like. Feature agents fil
 
 ## 0. Setup
 
-- **Production URL:** _(added after the first deploy)_
+- **Production URL:** https://fde-project-mini-erp-full-stack.vercel.app. Every push to `main` redeploys it.
 - **Demo accounts:** created by `cd backend && uv run python -m scripts.seed` (safe to run again). They all share one demo password. The seed resets it to `SiamBean-Demo-2026`, or to the value of the `DEMO_PASSWORD` environment variable if set.
 
 | Role | Person | Email | Password |
