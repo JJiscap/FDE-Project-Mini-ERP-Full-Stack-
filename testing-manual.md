@@ -49,6 +49,28 @@ The numbers must agree on every screen. Any screen that disagrees is a bug.
 | Change ARB-1KG price to 500, then reopen INV-0001 | INV-0001 still shows 450.00 and 9,630.00 |
 | Deactivate a product or customer, then start a new order | It can't be picked. Old documents still show it |
 
+### 2.1 Stock (ticket 07)
+
+Log in as Lek (Warehouse) or Somchai (Admin) and open **Stock**. Start from a fresh reset. The Product picker reads like `ARB-1KG · Arabica, 1 kg bag · 170 kg`. Use ARB-1KG unless stated.
+
+| Try | Success looks like |
+| --- | --- |
+| Stock-in tab: ARB-1KG, quantity 30, no note | Toast **"IN-0001 recorded: ARB-1KG now 200 kg"**. The picker now shows 200 kg. History's top row is **IN-0001, +30 kg, balance 200 kg**, by Lek |
+| Stock-out tab: quantity 171, reason "too many" (On Hand 170) | Red message **"Not enough stock for ARB-1KG"** under the form. On Hand still 170 kg. The next Stock-out of 1 (reason "sample") is still **OUT-0001** (no number is burned) |
+| Stock-out tab: quantity 5, reason empty | **"Reason is required for a stock-out or adjustment"**. Nothing is recorded |
+| Adjustment tab: quantity -3, reason "damaged bags" | **"ADJ-0001 recorded: ARB-1KG now 167 kg"** (from 170). History row **ADJ-0001, -3 kg**, reason "damaged bags" |
+| Adjustment tab: quantity -3, reason empty | **"Reason is required for a stock-out or adjustment"** |
+| Any tab: quantity 0 | **"Quantity can't be 0"** |
+| Any tab: quantity 2.5 | **"Quantity must be a whole number"** |
+| Stock-in or Stock-out tab: quantity -5 | **"Quantity must be greater than 0"** (only an Adjustment can be negative) |
+| Open the history of ARB-1KG after the rows above | Newest first. The oldest row is **Opening Stock, OPENING, +170 kg, balance 170 kg**. Each balance is the running total of the rows below it |
+| Create 21 or more movements for one Product | History shows 20 rows and **Previous / Next** buttons (page 2 holds the rest) |
+| Phone width (375px) | The form stacks above the history. History rows are cards. No sideways scroll |
+| Log in as Nok (Sales) or Fon (Accountant) | No **Stock** menu entry. Opening `/stock` directly shows **Access denied**. `GET /api/stock/products`, `GET /api/stock/movements?product_id=1` and `POST /api/stock/movements` all return **403** |
+| Deactivate a Product, then open Stock | It is missing from the picker. Posting a movement for it by API returns 409 "ROB-1KG is deactivated. Reactivate it before moving stock." |
+
+After these steps, reset the demo data again before the golden path.
+
 ## 3. Roles (US-3): walk the matrix as each user
 
 ### 3.1 Get a token
