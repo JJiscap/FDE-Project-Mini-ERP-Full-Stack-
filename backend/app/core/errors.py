@@ -25,6 +25,7 @@ _ACRONYMS = {"id": "ID", "sku": "SKU", "vat": "VAT", "po": "PO"}
 _WHOLE_NUMBER = {"int_parsing", "int_type", "int_from_float", "int_parsing_size"}
 _NUMBER = {"decimal_parsing", "decimal_type", "float_parsing", "float_type"}
 _TOO_LARGE = {"decimal_max_digits", "decimal_whole_digits"}
+_DATE = {"date_parsing", "date_type", "date_from_datetime_parsing", "date_from_datetime_inexact"}
 
 
 def _label(field: str) -> str:
@@ -62,6 +63,8 @@ def _sentence(label: str, error: dict) -> str:
         return f"{label} can have at most {ctx['decimal_places']} decimal places"
     if kind in _TOO_LARGE:
         return f"{label} is too large"
+    if kind in _DATE:
+        return f"{label} must be a date like 2026-10-22"
     if kind == "literal_error":
         return f"{label} must be {str(ctx.get('expected', '')).replace(chr(39), '')}"
     if kind in ("bool_parsing", "bool_type"):

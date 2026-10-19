@@ -1,17 +1,9 @@
-import { Landmark } from 'lucide-react'
-import { EmptyState } from '@/components/EmptyState'
-import { PageHeader } from '@/components/PageHeader'
+import { Receivables } from './Receivables'
 
-// STUB: the accounting ticket replaces this file. Only edit inside src/pages/accounting/.
+/**
+ * Accounting (Admin and Accountant only; the route guard and the API both enforce it).
+ * Open Invoices with Balances, Overdue first, the Open Receivables total, and the Record payment dialog.
+ */
 export default function AccountingPage() {
-  return (
-    <>
-      <PageHeader title="Accounting" description="Open Invoices, who still owes money, and Payments." />
-      <EmptyState
-        icon={Landmark}
-        title="Coming soon"
-        description="Open Receivables will appear here once they are built."
-      />
-    </>
-  )
+  return <Receivables />
 }
