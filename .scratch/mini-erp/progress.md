@@ -33,11 +33,23 @@ The orchestrator updates this file after every merge or decision and commits it.
       - `total = subtotal + vat`.
       - `doc_type` must be one of SO/INV/IN/OUT/ADJ.
 - **Wave 1 (01, 02, 03) is merged.**
-- **Wave 2: RUNNING** (started Tue 20 Oct). Three Sonnet agents, one ticket each, each in its own worktree. They push their branch and report back, and the orchestrator merges.
-  - `feature/products` (05)
-  - `feature/customers` (06)
-  - `feature/stock` (07)
-- After Wave 2 merges: run 04 deploy (if logged in), then W3 (08 → 09, with 11 in parallel).
+- **Wave 2: MERGED** (05 products, 06 customers, 07 stock), each on Sonnet. The combined `main` gives 239 backend tests and 75 frontend tests passing.
+  - Products API (05):
+    - `GET /api/products` takes `?q&active&low_stock&page`. Items are `{id, sku, name, unit, price, cost, reorder_level, active, on_hand, low_stock}`.
+    - Writes are Admin only.
+  - Customers API (06):
+    - `GET /api/customers` takes `?q&active&page` (Warehouse gets 403).
+    - Writes are Admin and Sales.
+    - Pages: `/customers/:id`, `/customers/new`, `/customers/:id/edit`. US-5 search takes 0.21 s.
+  - Stock API (07):
+    - `POST /api/stock/movements` with `{product_id, movement_type in|out|adjust, quantity, reason}`.
+    - `GET /api/stock/movements?product_id` returns `balance_after`. `GET /api/stock/products` feeds the picker.
+    - A refused movement rolls back the doc counter.
+  - None of the agents could log in through a browser. The UI is verified only by typecheck, unit tests and build. The orchestrator must click through it via Chrome MCP after the deploy (manual.md 13).
+- **Next:**
+  - W3: 08 draft sales orders (xhigh), with 11 dashboard in parallel.
+  - Then 09 confirm (fresh agent on `feature/sales-orders`).
+  - 04 deploy as soon as `vercel whoami` succeeds.
 - **Ticket 04 (deploy)** starts as soon as `vercel whoami` shows the user is logged in.
 
 ## Waves (tickets in .scratch/mini-erp/issues/)
