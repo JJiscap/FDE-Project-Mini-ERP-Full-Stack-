@@ -16,3 +16,9 @@
 - [ ] Sales and Accountant → `403` on the forms and history.
 - [ ] Screens: one Stock screen with In, Out and Adjust tabs or a type selector (the Product picker shows current On Hand), and a history view per Product. Works on a phone.
 - [ ] The stock rules in section 2 of `testing-manual.md` are filled in.
+
+## Progress notes
+
+- Done: red tests (`backend/tests/test_stock.py`, commit d772920), backend `app/modules/stock/{router,schemas}.py` green (full suite 139 passed).
+- Gotchas: run backend with `DATABASE_URL=` blank (placeholder password in .env). `GET /api/stock/products` is a light picker list so the stock module does not depend on ticket 05.
+- Next: frontend `src/pages/stock/`, testing-manual 2.1, tick criteria, push.

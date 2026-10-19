@@ -219,7 +219,7 @@ def test_a_deactivated_product_is_refused(client_as, conn, test_company_id):
     pid = product_id(warehouse, "ROB-1KG")
     conn.execute("update public.products set active = false where id = %s", (pid,))
 
-    response = record(warehouse, "in", 5, sku="ROB-1KG")
+    response = warehouse.post(MOVEMENTS, json={"product_id": pid, "movement_type": "in", "quantity": 5})
 
     assert response.status_code == 409
     assert response.json() == {"detail": "ROB-1KG is deactivated. Reactivate it before moving stock."}
