@@ -1,13 +1,14 @@
-"""Reset the Siam Bean demo data to the state before the demo.
+"""Reset the Siam Bean demo data (stub, red phase)."""
 
-Not built yet: ticket 13 (docs, polish, demo) implements it. It will delete
-Siam Bean's documents, movements and counters and reload the sample data
-(see scripts.demo_data), so Café Lune's demo order becomes SO-0001 / INV-0001.
-"""
+from scripts.demo_data import load_master_data  # noqa: F401
+
+
+def reset_company(conn, company_id, *, total_customers=200):
+    raise NotImplementedError
 
 
 def main() -> None:
-    raise NotImplementedError("reset_demo is built in ticket 13 (docs-polish-demo).")
+    raise NotImplementedError
 
 
 if __name__ == "__main__":
