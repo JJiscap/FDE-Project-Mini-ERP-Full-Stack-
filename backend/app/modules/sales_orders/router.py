@@ -1,4 +1,4 @@
-"""sales orders: Drafts, order lines and Cancel (ticket 08). Confirm is ticket 09.
+"""sales orders: Drafts, order lines, Cancel (ticket 08) and Confirm (ticket 09).
 
     GET    /sales-orders                        list (status, q, page, page_size), newest first
     POST   /sales-orders                        create a Draft {customer_id, lines?}, numbered SO-0001...
@@ -8,14 +8,16 @@
     PATCH  /sales-orders/{id}/lines/{line_id}   {quantity}  (Draft only)
     DELETE /sales-orders/{id}/lines/{line_id}   (Draft only)
     POST   /sales-orders/{id}/cancel            Draft -> Cancelled, keeps its number
+    POST   /sales-orders/{id}/confirm           Draft -> Confirmed: stock out + Invoice, all or nothing
 
 Admin and Sales only; Warehouse and Accountant get 403 on every endpoint. Every query
 filters by the caller's company_id. Orders are cancelled, never deleted (rule 7).
 Every endpoint returns the detail shape, except the list.
 
-Ticket 09 adds `POST /sales-orders/{id}/confirm` here: `service.lock_order`, call the
-`confirm_sales_order` DB function (ADR-0002), return `service.fetch_detail`, which already
-fills `invoice` from the invoices table. The stock check is NOT done here.
+Confirm is the DB function `confirm_sales_order` (ADR-0002): it checks stock, writes the
+`sale` movements, takes the INV number, writes the Invoice and sets the status in one
+transaction. This module only checks the Role and that the order is a Draft of this Company,
+calls it, and maps its refusals to 409 (the app's RaiseException handler).
 """
 
 from __future__ import annotations
@@ -200,4 +202,17 @@ def cancel_order(order_id: int, user: SalesStaff, conn: Conn) -> OrderDetail:
         "update public.sales_orders set status = 'cancelled' where company_id = %s and id = %s",
         (user.company_id, order_id),
     )
+    return service.fetch_detail(conn, user.company_id, order_id)
+
+
+@router.post("/{order_id}/confirm")
+def confirm_order(order_id: int, user: SalesStaff, conn: Conn) -> OrderDetail:
+    """Draft -> Confirmed. Takes the stock out and issues the Invoice in one transaction (US-1).
+
+    409 "Not enough stock for <SKU>" or "Add at least one line" (raised by the DB function, with
+    nothing changed), or "SO-0001 is confirmed and can't be changed" for a non-Draft.
+    The response is the order, whose `invoice` is now `{id, number}`.
+    """
+    service.lock_draft(conn, user.company_id, order_id)  # 404 / 409 with the usual wording
+    conn.execute("select public.confirm_sales_order(%s, %s::uuid)", (order_id, user.id))
     return service.fetch_detail(conn, user.company_id, order_id)

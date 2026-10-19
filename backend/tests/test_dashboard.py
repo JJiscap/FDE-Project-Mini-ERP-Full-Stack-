@@ -160,6 +160,53 @@ def test_after_the_us1_confirm_the_invoice_tiles_show_9630(client_as, conn, test
     assert body["stock_value"] == "100700.00"
 
 
+def test_the_real_us1_flow_through_the_api_moves_all_four_dashboard_tiles(client_as):
+    """No rows inserted by hand: Nok drafts and confirms Café Lune's 20 x ARB-1KG, then reads the Dashboard.
+
+    Owed since the dashboard ticket (the Confirm API did not exist yet). The expected values are the
+    scenario's: 9,630.00 sold today and owed, stock 107,100.00 - 20 x 320.00 = 100,700.00, and
+    ROB-1KG (35 < 40) still the one Low Stock Product.
+    """
+    sales, accountant = client_as("sales"), client_as("accountant")
+    before = dashboard(accountant)
+    assert before["sales_today"] == "0.00"
+    assert before["stock_value"] == "107100.00"
+
+    lune = next(c for c in sales.get("/api/customers", params={"q": "Café Lune"}).json()["items"] if c["name"] == "Café Lune")
+    arb = next(p for p in sales.get("/api/products", params={"q": "ARB-1KG"}).json()["items"] if p["sku"] == "ARB-1KG")
+    draft = sales.post(
+        "/api/sales-orders",
+        json={"customer_id": lune["id"], "lines": [{"product_id": arb["id"], "quantity": 20}]},
+    )
+    assert draft.status_code == 201, draft.text
+    confirmed = sales.post(f"/api/sales-orders/{draft.json()['id']}/confirm")
+    assert confirmed.status_code == 200, confirmed.text
+    assert confirmed.json()["invoice"]["number"] == "INV-0001"
+
+    for role_client in (accountant, sales):  # every Role sees the same numbers
+        body = dashboard(role_client)
+        assert body["sales_today"] == "9630.00"
+        assert body["open_invoices"] == {"count": 1, "amount": "9630.00"}
+        assert body["stock_value"] == "100700.00"
+        assert body["low_stock_count"] == 1
+
+
+def test_a_refused_confirm_leaves_the_dashboard_as_it_was(client_as):
+    sales, accountant = client_as("sales"), client_as("accountant")
+    before = dashboard(accountant)
+    lune = next(c for c in sales.get("/api/customers", params={"q": "Café Lune"}).json()["items"] if c["name"] == "Café Lune")
+    arb = next(p for p in sales.get("/api/products", params={"q": "ARB-1KG"}).json()["items"] if p["sku"] == "ARB-1KG")
+    draft = sales.post(
+        "/api/sales-orders",
+        json={"customer_id": lune["id"], "lines": [{"product_id": arb["id"], "quantity": 171}]},
+    ).json()
+
+    refused = sales.post(f"/api/sales-orders/{draft['id']}/confirm")
+
+    assert refused.status_code == 409
+    assert dashboard(accountant) == before
+
+
 def test_a_full_payment_closes_the_invoice_but_sales_today_stays(client_as, conn, test_company_id):
     invoice_id = insert_sale_state(conn, test_company_id)
     insert_payment(conn, test_company_id, invoice_id, "9630.00")
