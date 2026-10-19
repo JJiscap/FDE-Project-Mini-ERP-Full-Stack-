@@ -38,6 +38,7 @@ def _find(client, name: str) -> dict:
 def test_searching_lune_among_200_customers_finds_cafe_lune_fast(client_as, conn, test_company_id):
     _add_generated_cafes(conn, test_company_id, 197)  # 3 sample + 197 = 200
     client = client_as("sales")
+    client.get("/api/customers", params={"page_size": 1})  # warm-up: opens the pool, fetches the JWKS
 
     started = time.perf_counter()
     response = client.get("/api/customers", params={"q": "lune"})

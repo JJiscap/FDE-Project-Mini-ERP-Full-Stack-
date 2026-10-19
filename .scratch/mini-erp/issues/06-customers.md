@@ -20,3 +20,10 @@
   - Payment Terms shown as "Cash" or "30 days"
   - works on a phone
 - [ ] Section 4 of `testing-manual.md` (US-5) and the customer rules in section 2 are filled in.
+
+## Progress notes
+
+- Done: red tests (`99eb71b`), backend green (`feat(customers)`): `backend/app/modules/customers/router.py`, 40 tests in `backend/tests/test_customers.py`, full suite 144 passed.
+- US-5 measured: 0.21 s warm (0.66 s on the very first request of a process, includes opening the pool and fetching the JWKS). The US-5 test sends one warm-up request before timing.
+- Next: UI in `frontend/src/pages/customers/`, docs (testing-manual section 4 and rules), tick checkboxes.
+- Gotchas: run backend with `DATABASE_URL=` blank (placeholder password in `.env`). `payment_terms_days` errors read "Payment terms days must be 0 or more" (label comes from the field name).
