@@ -4,7 +4,7 @@
 
 **Blocked by:** 05, 06
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Branch:** `feature/sales-orders` (shared with ticket 09)
 
@@ -14,7 +14,7 @@
 - [x] Quantity 0 → refused with "Quantity must be greater than 0". A deactivated Product or Customer → refused.
 - [x] A Cancelled Draft can't be edited. Editing a non-Draft → `409`.
 - [x] Warehouse and Accountant → `403` on every Sales Order endpoint.
-- [ ] Screens:
+- [x] Screens:
   - order list with an empty state
   - "New order" flow usable by Nok without training: Customer search box, Product picker showing On Hand, quantity, live totals
   - Draft detail with Cancel
@@ -55,5 +55,20 @@ Gotchas:
 - The DB function must compute VAT the same way as `vat_for` (`round(subtotal * 0.07, 2)`; Postgres `round` on numeric is half away from zero, which is half up for positive numbers). Add a test that the Invoice VAT equals the order detail VAT.
 - `service.describe_unchangeable(order)` gives the "is confirmed and can't be changed" message; `service.totals(subtotal)` gives `(subtotal, vat, total)`.
 
-### Next
-- UI in `frontend/src/pages/sales-orders/` (list, new, detail), then `testing-manual.md` section 1a, then tick the UI checkbox and set Status done.
+### Frontend: DONE (commit `feat(sales-orders-ui): ...`)
+
+Files in `frontend/src/pages/sales-orders/`:
+- `index.tsx` nested `<Routes>`: `/sales-orders` (`OrderList`), `/new` (`NewOrder`), `/:id` (`OrderDetail`).
+- `OrderActions.tsx`: **the spot for ticket 09.** It renders in `PageHeader`'s `action` slot of the detail screen and today holds only the Draft "Cancel order" button + `ConfirmDialog`. A comment in the file lists what to add: the primary "Confirm order" button (gate with `canConfirmOrders(me.role)`, `ConfirmDialog` "Confirm SO-0012?", `POST /api/sales-orders/{id}/confirm`, then `cacheOrder(queryClient, updated)` and invalidate `['stock']`, `['invoices']`, `['dashboard']`; show a 409 "Not enough stock for ARB-1KG" inside the dialog description like the Cancel error) and, for a Confirmed order, a link to `order.invoice` (`{id, number}`; the screen shows a "Confirmed on ..." notice already but no link).
+- `helpers.ts`: API types (`OrderDetail`, `OrderLine`, ...), `orderKey(id)` and `cacheOrder(queryClient, order)` (put the API's updated order in the cache and refresh the lists), browser-side money in whole satang (`computeTotals`, `lineAmount`; same half-up VAT rule as the server, used only for the live totals on `/new`; saved orders show the server's numbers), `parseQuantity`, `stockWarning`, `productLabel`, draft-line helpers.
+- `CustomerPicker.tsx` (`GET /customers?q=&active=true`), `ProductPicker.tsx` (`GET /products?active=true&q=`, shows `ARB-1KG · Arabica, 1 kg bag · 450.00 THB · 170 kg on hand`), `LinesEditor.tsx` (cards that fit a phone; quantity commits on blur/Enter on the detail screen, live on `/new`; the "Only 170 kg on hand" warning), `OrderTotals.tsx` (Subtotal / VAT 7% / Total).
+- Tests: `helpers.test.ts` (17) and `screens.test.tsx` (15: New order flow with the 9,630.00 totals and stock warning, Draft edits, refused edit shows the API message, Cancel dialog, read-only Confirmed/Cancelled, Customer change, list + empty state) using a fake `fetch`. Frontend total 107 tests.
+- No shared component, `permissions.ts` or npm dependency was changed.
+
+Gotchas for 09:
+- Query keys: `['sales-orders','list',{...}]` and `['sales-orders','detail',<id as string>]` (`orderKey`). Invalidate `['sales-orders']` to refresh both.
+- Stock is only a warning in the UI (the `on_hand` on each line comes from the detail response); Confirm enforces it.
+- The UI could not be clicked through in a real browser by this agent (no login in the sandbox): verified by typecheck, jsdom screen tests and build only. The 375 px layout is checked by reading the classes, not by eye.
+
+### Docs
+- `testing-manual.md` section `1a. Draft Sales Orders (ticket 08)` has 18 manual steps as Nok.

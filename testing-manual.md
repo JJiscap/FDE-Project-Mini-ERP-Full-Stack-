@@ -36,6 +36,33 @@ How to test the Mini ERP by hand and what success looks like. Feature agents fil
 
 The numbers must agree on every screen. Any screen that disagrees is a bug.
 
+### 1a. Draft Sales Orders (ticket 08)
+
+Step 3 of the golden path, in detail. Sign in as **Nok** (`nok@siambean.test`) after a fresh reset (`scripts.reset_demo`), so the first order is `SO-0001`. Confirm is ticket 09; until then an order stays Draft or becomes Cancelled.
+
+| Step | Do | Success looks like |
+| --- | --- | --- |
+| 1 | Menu → **Sales Orders** | Empty list: **"No sales orders yet"** and a **New order** button. Filter buttons All / Draft / Confirmed / Cancelled and a search box |
+| 2 | **New order** → in **1. Customer** type `lune` | Café Lune is listed with its Tax ID and Payment Terms. Click it: the box turns into a card with **Change customer** |
+| 3 | In **2. Products** the list shows `ARB-1KG · Arabica, 1 kg bag · 450.00 THB · 170 kg on hand` (and the other active products). Click ARB-1KG, type **20**, **Add to order** | One line: `ARB-1KG`, **450.00 THB per kg**, quantity 20 kg, amount **9,000.00 THB**. Totals: Subtotal **9,000.00 THB**, VAT 7% **630.00 THB**, Total **9,630.00 THB**. The Unit Price is not editable |
+| 4 | Add ARB-1KG again with quantity **5** | Still one line, quantity now **25** (no duplicate line) |
+| 5 | Still on New order: change the line quantity to **200** and tab out | An amber warning **"Only 170 kg on hand"** shows on the line. It does not block anything (the server checks stock at Confirm). Set it back to **20** and the warning goes away |
+| 6 | Try quantity **0**, then **1.5** | **"Quantity must be greater than 0"**, then **"Quantity must be a whole number"**. Nothing is added or changed |
+| 7 | Click **Save as Draft** | Opens the order **SO-0001**, status **Draft**, today's date (Bangkok), Café Lune, the line and the same totals **9,630.00 THB**. Toast "SO-0001 saved as a Draft" |
+| 8 | On SO-0001: change the quantity to **30**, tab out | Line amount **13,500.00 THB**, Subtotal 13,500.00, VAT **945.00**, Total **14,445.00 THB**. Unit price still **450.00 THB per kg** |
+| 9 | **Change customer** → search `brew` → pick Brew Lab Ari | The card shows Brew Lab Ari; the lines and totals are unchanged |
+| 10 | Under **Add a product** add 1 × ROB-1KG, then remove it with the bin button | The line appears (320.00 THB), then goes; totals return to 14,445.00 THB |
+| 11 | As **Somchai (Admin)** open Products → ARB-1KG → set the price to **500.00**. Back as Nok, reopen SO-0001 | The line still shows **450.00 THB per kg** and Total **14,445.00 THB**. A **new** order picks up 500.00 |
+| 12 | Menu → Sales Orders | SO-0001 is listed (Draft, Brew Lab Ari, 14,445.00 THB). Search `SO-0001` and `brew` both find it. **Draft** filter shows it; **Confirmed** shows "No confirmed sales orders" |
+| 13 | On SO-0001 click **Cancel order** | A dialog "Cancel SO-0001?" says it keeps its number. Press **Keep order**: nothing changes. Click **Cancel order** again and, in the dialog, the red **Cancel order** button: status **Cancelled**, a grey notice, no edit controls |
+| 14 | **New order** for any customer and save it | The number is **SO-0002**, not SO-0001 again |
+| 15 | Open the cancelled SO-0001 by its address (`/sales-orders/<id>`) | Read-only. API check: `PATCH /api/sales-orders/<id>/lines/<line>` answers **409** `"SO-0001 is cancelled and can't be changed"` |
+| 16 | Somchai: deactivate the customer Brew Lab Ari (Customers), then as Nok start a new order and search `brew` | It is not offered (only active customers). Through the API, `POST /api/sales-orders` with that customer answers **409** `"Brew Lab Ari is deactivated"` and no number is used. Same for a deactivated Product: `"ARB-1KG is deactivated"` |
+| 17 | Phone width (375 px, or the browser's device mode) | No sideways scroll on the list (cards), New order and the order screen; buttons and inputs are easy to tap |
+| 18 | Roles: sign in as **Lek (Warehouse)** and **Fon (Accountant)** | **Sales Orders** is not in their menu; opening `/sales-orders` directly shows **Access denied**. With their tokens every `/api/sales-orders...` call answers **403** |
+
+Automated: `cd backend && uv run pytest -q tests/test_sales_orders.py` (67 tests) and `cd frontend && npm test` (screen tests in `src/pages/sales-orders/`).
+
 ## 2. Business rules (bad input is rejected with a clear message)
 
 | Try | Success looks like |
