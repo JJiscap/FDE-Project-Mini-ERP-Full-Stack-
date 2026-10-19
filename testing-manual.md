@@ -5,15 +5,17 @@ How to test the Mini ERP by hand and what success looks like. Feature agents fil
 ## 0. Setup
 
 - **Production URL:** _(added after the first deploy)_
-- **Demo accounts:** _(added by the seed ticket)_
+- **Demo accounts:** created by `cd backend && uv run python -m scripts.seed` (safe to run again). They all share one demo password. The seed resets it to `SiamBean-Demo-2026`, or to the value of the `DEMO_PASSWORD` environment variable if set.
 
 | Role | Person | Email | Password |
 | --- | --- | --- | --- |
-| Admin | Khun Somchai | | |
-| Sales | Nok | | |
-| Sales | Ploy | | |
-| Warehouse | Lek | | |
-| Accountant | Fon | | |
+| Admin | Khun Somchai | `somchai@siambean.test` | `SiamBean-Demo-2026` |
+| Sales | Nok | `nok@siambean.test` | `SiamBean-Demo-2026` |
+| Sales | Ploy | `ploy@siambean.test` | `SiamBean-Demo-2026` |
+| Warehouse | Lek | `lek@siambean.test` | `SiamBean-Demo-2026` |
+| Accountant | Fon | `fon@siambean.test` | `SiamBean-Demo-2026` |
+
+- **Demo data after the seed:** Siam Bean Co. has 4 products (ARB-1KG 170 kg, ROB-1KG 35 kg, BLD-1KG 90 kg, DRP-10 240 boxes), 200 customers (Café Lune, Brew Lab Ari and Sukhumvit Corner Café plus 197 generated cafés) and no orders yet.
 
 - **Fresh state:** reset the demo data first (`cd backend && uv run python -m scripts.reset_demo`). Every expected number below assumes a fresh reset.
 - **Automated tests:** `cd backend && uv run pytest` must be all green.

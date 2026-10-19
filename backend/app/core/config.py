@@ -72,9 +72,17 @@ class Settings:
 
 
 @lru_cache(maxsize=1)
-def get_settings() -> Settings:
-    # override=False: variables already in the environment take priority over .env
+def load_env() -> None:
+    """Load the nearest `.env` (cwd or a parent) into os.environ, once.
+
+    override=False: variables already in the environment take priority over .env.
+    """
     load_dotenv(find_dotenv(usecwd=True), override=False)
+
+
+@lru_cache(maxsize=1)
+def get_settings() -> Settings:
+    load_env()
     supabase_url = _require("SUPABASE_URL").rstrip("/")
     return Settings(
         supabase_url=supabase_url,

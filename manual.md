@@ -22,3 +22,7 @@ Claude does everything else. Tick each box when it's done. Run commands prefixed
 - [ ] **8. Record a backup video** of the US-1 flow (Sales → confirm → invoice → Accountant payment → dashboard) in case the network fails.
 - [ ] **9. Rehearse** the 7-minute demo with a timer (script in `testing-manual.md`).
 - [ ] **10. Log in before your turn** on the deployed URL, not `localhost`.
+
+## Found while building the backend
+
+- [ ] **11. Fill in `DATABASE_URL` in `.env` and in Vercel.** It is blank in `.env` right now. The backend still works locally (it builds the Supabase transaction pooler connection from `POSTGRES_PASSWORD` and the project ref, region `aws-0-ap-southeast-1`), but Vercel needs the real value: Supabase dashboard → Connect → **Transaction pooler** URI (port 6543), with your database password in it. Add it as the `DATABASE_URL` environment variable on the Vercel project, together with `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_JWKS_URL`.
