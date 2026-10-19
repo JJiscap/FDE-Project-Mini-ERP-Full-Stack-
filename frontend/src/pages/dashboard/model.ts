@@ -18,10 +18,16 @@ export function openInvoicesHref(role: Role | null | undefined): string | null {
   return null
 }
 
+/** The two halves of the Open invoices tile: `1 invoice` and `9,630.00 THB`. */
+export function openInvoicesParts(open: { count: number; amount: string }): { count: string; amount: string } {
+  const noun = open.count === 1 ? 'invoice' : 'invoices'
+  return { count: `${open.count} ${noun}`, amount: formatTHB(open.amount) }
+}
+
 /** `1 invoice · 9,630.00 THB` */
 export function openInvoicesText(open: { count: number; amount: string }): string {
-  const noun = open.count === 1 ? 'invoice' : 'invoices'
-  return `${open.count} ${noun} · ${formatTHB(open.amount)}`
+  const { count, amount } = openInvoicesParts(open)
+  return `${count} · ${amount}`
 }
 
 const clock = new Intl.DateTimeFormat('en-GB', {

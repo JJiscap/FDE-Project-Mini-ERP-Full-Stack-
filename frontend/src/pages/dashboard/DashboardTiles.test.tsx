@@ -24,10 +24,11 @@ describe('DashboardTiles', () => {
     renderTiles()
 
     expect(screen.getByText('Sales today (incl. VAT)')).toBeInTheDocument()
-    expect(screen.getByText('9,630.00 THB')).toBeInTheDocument()
+    expect(screen.getAllByText('9,630.00 THB')).toHaveLength(2) // Sales today and the Open invoices amount
     expect(screen.getByText('Low stock')).toBeInTheDocument()
     expect(screen.getByText('Open invoices')).toBeInTheDocument()
-    expect(screen.getByText('1 invoice · 9,630.00 THB')).toBeInTheDocument()
+    // Count and amount sit on separate lines, so the amount never splits before "THB".
+    expect(screen.getByText('1 invoice')).toBeInTheDocument()
     expect(screen.getByText('Stock value')).toBeInTheDocument()
     expect(screen.getByText('100,700.00 THB')).toBeInTheDocument()
   })

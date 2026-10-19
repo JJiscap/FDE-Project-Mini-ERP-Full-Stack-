@@ -1,6 +1,8 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { AccessDenied } from '@/components/AccessDenied'
 import { ErrorAlert } from '@/components/ErrorAlert'
+import { ReloadNotice } from '@/components/ReloadNotice'
+import { isChunkLoadError } from '@/lib/chunk-errors'
 import { isForbidden } from '@/lib/api'
 import { queryClient } from '@/lib/query-client'
 
@@ -43,6 +45,8 @@ export class AccessBoundary extends Component<Props, State> {
   render() {
     if (!this.state.hasError) return this.props.children
     if (isForbidden(this.state.error)) return <AccessDenied />
+    // A lazy page that failed to download stays failed (React caches it), so only a reload helps.
+    if (isChunkLoadError(this.state.error)) return <ReloadNotice error={this.state.error} className="mx-auto mt-6 max-w-xl" />
     return (
       <div className="mx-auto max-w-xl pt-6">
         <ErrorAlert error={this.state.error} onRetry={this.reset} />
