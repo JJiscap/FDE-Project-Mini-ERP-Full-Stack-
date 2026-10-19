@@ -13,14 +13,14 @@ Only the Supabase URL and the publishable key reach the browser, mapped explicit
 
 **Blocked by:** None (can start immediately, in parallel with 01–02; use `/api/me` as specified in the spec)
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Branch:** `feature/frontend-shell`
 
-- [ ] A demo User can log in, reload and stay logged in, and log out.
-- [ ] The menu shows only the screens the User's Role may use (spec role matrix). A direct URL to a forbidden screen shows Access denied.
-- [ ] A `403` from the API on any page shows the Access denied page. A `401` sends the user back to Login.
-- [ ] `formatTHB(9630)` → `9,630.00 THB`, tested with Vitest. Quantities show their unit (`150 kg`).
-- [ ] The layout works at 375 px wide with no horizontal scroll.
-- [ ] `npm run typecheck`, `npm run build` and `npm test` pass. The built bundle doesn't contain the secret key.
-- [ ] Each module has a stub route and page, so later tickets edit only their own folder.
+- [x] A demo User can log in, reload and stay logged in, and log out.
+- [x] The menu shows only the screens the User's Role may use (spec role matrix). A direct URL to a forbidden screen shows Access denied.
+- [x] A `403` from the API on any page shows the Access denied page. A `401` sends the user back to Login.
+- [x] `formatTHB(9630)` → `9,630.00 THB`, tested with Vitest. Quantities show their unit (`150 kg`).
+- [x] The layout works at 375 px wide with no horizontal scroll.
+- [x] `npm run typecheck`, `npm run build` and `npm test` pass. The built bundle doesn't contain the secret key.
+- [x] Each module has a stub route and page, so later tickets edit only their own folder.

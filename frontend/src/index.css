@@ -82,7 +82,7 @@
   --accent: oklch(0.94 0.02 75);
   --accent-foreground: oklch(0.28 0.04 55);
   --border: oklch(0.89 0.012 75);
-  --input: oklch(0.8 0.015 70); /* darker than border so fields stay visible (3:1) */
+  --input: oklch(0.62 0.02 65); /* field outline: 3.6:1 on white (WCAG 1.4.11) */
   --ring: oklch(0.5 0.1 55);
   --destructive: oklch(0.5 0.19 27);
 
