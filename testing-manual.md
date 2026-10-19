@@ -127,7 +127,20 @@ _(pending: customers ticket)_
 
 ## 5. Low stock (US-2)
 
-_(pending: products ticket)_
+| Step | Who | Do | Success looks like |
+| --- | --- | --- | --- |
+| 1 | Lek (Warehouse) | Open **Products** | 4 products. ARB-1KG **170 kg**, BLD-1KG **90 kg**, DRP-10 **240 box**, ROB-1KG **35 kg** with a **Low stock** badge. Prices like **450.00 THB**. No "New product" button and no Edit/Deactivate buttons |
+| 2 | Lek | Click **Low stock only** (or open `/products?low_stock=true`, the Dashboard tile link) | Only ROB-1KG (35 < 40) |
+| 3 | Lek | Type `arb` in search, then `DRIP`, then `xyz` | ARB-1KG, then DRP-10, then **No products match 'xyz'** |
+| 4 | Somchai (Admin) | Click **New product**. SKU `new-1kg` (lower case), Name `New bean`, Unit kg, Price `500`, Cost `350`, Reorder level `20`. **Create product** | Toast "NEW-1KG created". The list shows **NEW-1KG** (upper case) with On Hand **0 kg** and a Low stock badge (0 < 20) |
+| 5 | Somchai | New product again with SKU `ARB-1KG` | Under the SKU field: **SKU ARB-1KG already exists** |
+| 6 | Somchai | New product with Price `-1` (or Cost `-1`) | Under the field: **Price must be 0 or more** / **Cost must be 0 or more** |
+| 7 | Somchai | **Edit** ARB-1KG, set Price `500`, **Save product** | Toast, list shows **500.00 THB**. The SKU field is locked |
+| 8 | Somchai | **Deactivate** NEW-1KG, then **Deactivate product** in the dialog | It leaves the default (Active) list. Choose **Inactive** in the filter: it is there with a **Deactivated** badge. **Reactivate** brings it back |
+| 9 | Nok / Lek / Fon | Call `POST /api/products` or `PATCH /api/products/{id}` with their token (section 3.1) | `403` each time. `GET /api/products` is `200` for every Role |
+| 10 | Phone | DevTools 375 px, Products as Somchai | Cards, no horizontal scroll, dialog scrolls and fits the screen |
+
+Clean up afterwards: set ARB-1KG back to Price `450` and leave NEW-1KG deactivated (or run `reset_demo` and check the product list shows only the 4 sample products).
 
 ## 6. Bonus: PDF invoice
 
