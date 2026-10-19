@@ -24,15 +24,15 @@ How to test the Mini ERP by hand and what success looks like. Feature agents fil
 
 | Step | Who | Do | Success looks like |
 | --- | --- | --- | --- |
-| 1 | Anyone | Open the dashboard | Low-stock count **1** (ROB-1KG: 35 < 40). Stock value **107,100.00 THB**. Sales today **0.00 THB**. Open invoices **0 · 0.00 THB** |
+| 1 | Anyone | Open the dashboard | Low stock **1** (ROB-1KG: 35 < 40). Stock value **107,100.00 THB**. Sales today (incl. VAT) **0.00 THB**. Open invoices **0 invoices · 0.00 THB** |
 | 2 | Nok (Sales) | Products list | ARB-1KG on hand **170 kg**. ROB-1KG shows a **Low stock** badge |
 | 3 | Nok (Sales) | New order for Café Lune: 20 × ARB-1KG | Unit price pre-filled **450.00 THB**. Line total **9,000.00 THB**. Order number **SO-0001** |
 | 4 | Nok (Sales) | Confirm the order | Status **Confirmed**. Invoice **INV-0001** created |
 | 5 | Nok (Sales) | Products list | ARB-1KG on hand **150 kg** |
 | 6 | Nok (Sales) | Open INV-0001 | Subtotal **9,000.00 THB**, VAT 7% **630.00 THB**, total **9,630.00 THB**. Due date = invoice date + 30 days |
-| 7 | Anyone | Dashboard | Sales today **9,630.00 THB**. Open invoices **1 · 9,630.00 THB**. Stock value **100,700.00 THB** |
+| 7 | Anyone | Dashboard | Sales today (incl. VAT) **9,630.00 THB**. Open invoices **1 invoice · 9,630.00 THB**. Stock value **100,700.00 THB** |
 | 8 | Fon (Accountant) | Accounting → INV-0001 → record payment 9,630.00 | Status **Paid**. Balance **0.00 THB** |
-| 9 | Anyone | Dashboard | Open invoices **0 · 0.00 THB** (dropped by 9,630.00) |
+| 9 | Anyone | Dashboard | Open invoices **0 invoices · 0.00 THB** (dropped by 9,630.00) |
 
 The numbers must agree on every screen. Any screen that disagrees is a bug.
 
@@ -198,6 +198,24 @@ _(pending: PDF ticket)_
 - [ ] Money always looks like `9,630.00 THB`
 - [ ] No secrets in git: `git log -p | grep -iE "sb_secret|service_role|eyJhbGci"` prints nothing
 - [ ] No secret key in the browser bundle: `cd frontend && npm run build && npm run check:bundle` prints "not in dist/" for every secret. (A plain `grep sb_secret frontend/dist` matches once: supabase-js's own key-prefix check, not a key.)
+
+### 7a. Dashboard (ticket 11)
+
+Open `/` (the Dashboard) as any Role. The page says "Good morning/afternoon/evening, <your name>" with the Company name under it, and a small "Updated hh:mm:ss" line (Bangkok time) below the tiles.
+
+| Tile | Clean company | After US-1 Confirm | After full Payment |
+| --- | --- | --- | --- |
+| **Sales today (incl. VAT)** | 0.00 THB | 9,630.00 THB | 9,630.00 THB (a Payment never changes Sales Today) |
+| **Low stock** (click: `/products?low_stock=true`) | 1 | 1 | 1 |
+| **Open invoices** (click: Accounting for Admin/Accountant, Invoices for Sales, no link for Warehouse) | 0 invoices · 0.00 THB | 1 invoice · 9,630.00 THB | 0 invoices · 0.00 THB |
+| **Stock value** | 107,100.00 THB | 100,700.00 THB | 100,700.00 THB |
+
+1. Warehouse records a Stock-in of 10 kg ROB-1KG: **Low stock** becomes **0** (45 >= 40) and **Stock value** becomes 109,300.00 THB.
+2. Partial Payment of 5,000.00 THB on INV-0001: **Open invoices** shows **1 invoice · 4,630.00 THB**.
+3. Two tabs: keep the Dashboard open in tab A, Confirm an order in tab B, go back to tab A. The numbers update when the tab regains focus, or within 30 seconds, with no reload.
+4. Loading: throttle the network in DevTools and reload; each tile shows a grey skeleton, not a number. Stop the API: an error banner with the API's message and **Try again**.
+5. Phone (DevTools 375 px): tiles in a 2 x 2 grid, no horizontal scroll. Desktop: 4 across.
+6. Every Role (Somchai, Nok, Lek, Fon) can open the Dashboard. `GET /api/dashboard` without a token is `401`.
 
 ## 8. Demo rehearsal (7 minutes + 3 Q&A)
 
