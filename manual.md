@@ -4,6 +4,8 @@ Claude does everything else. Tick each box when it's done. Run commands prefixed
 
 ## Now (blocks the first deploy)
 
+- [ ] **0. Fill in `DATABASE_URL` in `.env` (urgent: the backend needs it).** The line exists but is empty. In the Supabase dashboard open **Connect** (top bar) → **Connection string** → **Transaction pooler** (port **6543**). Copy the URI, replace `[YOUR-PASSWORD]` with your database password (the same value as `POSTGRES_PASSWORD`), and paste it after `DATABASE_URL=` in the repo-root `.env`. Do it in your editor and **don't paste it into the chat**. Then tell Claude "DATABASE_URL done".
+
 - [ ] **1. Log in to Vercel.** Run `! vercel login` and finish the browser sign-in. If Vercel asks to connect GitHub, allow access to `JJiscap/FDE-Project-Mini-ERP-Full-Stack-` so every push to `main` redeploys.
 - [ ] **2. Set your Git identity** so commits link to your GitHub profile. Without it, commits show `...@MacBook-Air...local`:
   ```bash
