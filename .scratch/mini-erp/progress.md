@@ -46,11 +46,16 @@ The orchestrator updates this file after every merge or decision and commits it.
     - `GET /api/stock/movements?product_id` returns `balance_after`. `GET /api/stock/products` feeds the picker.
     - A refused movement rolls back the doc counter.
   - None of the agents could log in through a browser. The UI is verified only by typecheck, unit tests and build. The orchestrator must click through it via Chrome MCP after the deploy (manual.md 13).
-- **Wave 3: RUNNING.**
-  - `feature/sales-orders` (08, xhigh):
-    - Line-level endpoints. Price is frozen on add, and adding the same product again merges into its line.
-    - `vat_for()` lives in `app/core/money.py`.
-    - The detail includes `invoice: null`, and there's an `<OrderActions>` slot for 09.
+- **Wave 3:**
+  - `feature/sales-orders` (08): **MERGED** (df89090).
+    - Sonnet confirmed. One test was changed after red: a fixture date moved from UTC to Bangkok, assertions unchanged, so it was accepted.
+    - The merged review run: 322 backend tests and 117 frontend tests pass; build and `check:bundle` are clean.
+    - API: `/api/sales-orders` list, create, detail, PATCH customer, lines POST/PATCH/DELETE, `/cancel`. 409 messages are human-readable.
+    - Quantity is capped at 1,000,000.
+  - **09 confirm: RUNNING** (fresh Sonnet xhigh on `feature/sales-orders`).
+    - Includes the `confirm_sales_order` migration, `POST /{id}/confirm` and the Confirm UI in `OrderActions.tsx`.
+    - Also adds the end-to-end US-1 → dashboard test owed by ticket 11.
+  - All old agent worktrees were removed; the branches remain on origin.
   - `feature/dashboard` (11): **MERGED** (6c7e0be).
     - Sonnet confirmed. Tests are unchanged since red (bb1a810).
     - Review worktree on main + branch: 255 backend tests and 85 frontend tests pass; typecheck, build and `check:bundle` are clean.
@@ -59,7 +64,7 @@ The orchestrator updates this file after every merge or decision and commits it.
     - Not browser-verified: the 375px layout, the amber Low stock tile, refresh across tabs.
     - The tests insert the US-1 rows directly, so after 09 an end-to-end test (confirm, then dashboard) is still owed.
 - **Next:**
-  - 09 confirm: a FRESH agent on `feature/sales-orders` after 08 reports. It reads 08's progress notes. After 09 merges, add an end-to-end dashboard test.
+  - After 09 merges: start 10 (invoices, accounting, payments), then 12 (PDF), then 13 (README, which the login page already points to for the password).
   - 04 deploy as soon as `vercel whoami` succeeds.
 - **Ticket 04 (deploy), part 1 MERGED** (0bb174f): `vercel.json` in Vercel **services** mode.
   - `backend` (fastapi, `app.main:app`) is public at `/api/(.*)`. The service sees the original `/api/...` path, so no code change was needed.
