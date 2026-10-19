@@ -1,18 +1,18 @@
-import { FileText } from 'lucide-react'
-import { EmptyState } from '@/components/EmptyState'
-import { PageHeader } from '@/components/PageHeader'
+import { Route, Routes } from 'react-router'
+import { NewOrder } from './NewOrder'
+import { OrderDetail } from './OrderDetail'
+import { OrderList } from './OrderList'
 
-// STUB: the sales orders ticket replaces this file. Only edit inside src/pages/sales-orders/.
-// It may render nested <Routes> for /sales-orders/new and /sales-orders/:id.
+/**
+ * Sales Orders (Admin and Sales): the list, the New order flow and one order.
+ * Ticket 09 (Confirm) plugs into `OrderActions.tsx`, not here.
+ */
 export default function SalesOrdersPage() {
   return (
-    <>
-      <PageHeader title="Sales Orders" description="Create an order, confirm it, and the Invoice is issued." />
-      <EmptyState
-        icon={FileText}
-        title="Coming soon"
-        description="Sales Orders will appear here once they are built."
-      />
-    </>
+    <Routes>
+      <Route index element={<OrderList />} />
+      <Route path="new" element={<NewOrder />} />
+      <Route path=":id" element={<OrderDetail />} />
+    </Routes>
   )
 }

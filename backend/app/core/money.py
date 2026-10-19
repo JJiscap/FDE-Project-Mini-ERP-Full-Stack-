@@ -18,11 +18,22 @@ from typing import Annotated
 from pydantic import Field, PlainSerializer
 
 _TWO_PLACES = Decimal("0.01")
+VAT_RATE = Decimal("0.07")
 
 
 def format_money(value: Decimal) -> str:
     """`Decimal("9630")` -> "9630.00" (rounded half up if it has more decimals)."""
     return str(value.quantize(_TWO_PLACES, rounding=ROUND_HALF_UP))
+
+
+def vat_for(subtotal: Decimal) -> Decimal:
+    """VAT 7% of a whole Subtotal, rounded half up to 2 decimals (business rule 1).
+
+    The ONE place the VAT rule lives: the Sales Order totals and the Invoice (ticket 09,
+    `confirm_sales_order`) must both agree with it. `vat_for(Decimal("1.50"))` is 0.11
+    (0.105 rounds up), not 0.10.
+    """
+    return (subtotal * VAT_RATE).quantize(_TWO_PLACES, rounding=ROUND_HALF_UP)
 
 
 Money = Annotated[
