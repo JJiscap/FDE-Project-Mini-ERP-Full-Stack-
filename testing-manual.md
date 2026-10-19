@@ -24,15 +24,15 @@ How to test the Mini ERP by hand and what success looks like. Feature agents fil
 
 | Step | Who | Do | Success looks like |
 | --- | --- | --- | --- |
-| 1 | Anyone | Open the dashboard | Low stock **1** (ROB-1KG: 35 < 40). Stock value **107,100.00 THB**. Sales today (incl. VAT) **0.00 THB**. Open invoices **0 invoices · 0.00 THB** |
+| 1 | Anyone | Open the dashboard | Low stock **1** (ROB-1KG: 35 < 40). Stock value **107,100.00 THB**. Sales today (incl. VAT) **0.00 THB**. Open invoices **0 invoices** over **0.00 THB** (two lines) |
 | 2 | Nok (Sales) | Products list | ARB-1KG on hand **170 kg**. ROB-1KG shows a **Low stock** badge |
 | 3 | Nok (Sales) | Sales Orders → **New order** → Customer `lune` → pick Café Lune; Products → ARB-1KG, quantity **20**, **Add to order** → **Save as Draft** | Unit price **450.00 THB per kg** (not editable). Line amount **9,000.00 THB**. Opens order **SO-0001**, status **Draft**. Totals: Subtotal 9,000.00, VAT 7% 630.00, Total **9,630.00 THB** |
 | 4 | Nok (Sales) | On SO-0001 press the primary **Confirm order** button, read the dialog **"Confirm SO-0001?"** (it names Café Lune, "20 kg of ARB-1KG" and **Total 9,630.00 THB (incl. 7% VAT)**), then press **Confirm order** in the dialog | Toast "SO-0001 confirmed. Invoice INV-0001 issued.". Status badge **Confirmed**, a notice "Confirmed on ... This order is final and can't be changed", and a button **Open INV-0001** at the top. The lines have no edit controls and there is no Cancel order button |
 | 5 | Nok (Sales) | Products list | ARB-1KG on hand **150 kg** |
 | 6 | Nok (Sales) | On SO-0001 press **Open INV-0001** (address `/invoices/<id>`) | The Invoice screen opens: **INV-0001**, badge **Open**, Customer Café Lune with Tax ID **0105561000011**, line ARB-1KG 20 kg × 450.00 THB = 9,000.00 THB, Subtotal **9,000.00 THB**, VAT 7% **630.00 THB**, Total **9,630.00 THB**, Due date = Invoice date + 30 days, Balance **9,630.00 THB**, "No payments yet". Nok sees no **Record payment** button; the Sales Order is a link back to SO-0001 |
-| 7 | Anyone | Dashboard | Sales today (incl. VAT) **9,630.00 THB**. Open invoices **1 invoice · 9,630.00 THB**. Stock value **100,700.00 THB** |
+| 7 | Anyone | Dashboard | Sales today (incl. VAT) **9,630.00 THB**. Open invoices **1 invoice** over **9,630.00 THB** (two lines). Stock value **100,700.00 THB** |
 | 8 | Fon (Accountant) | Menu → **Accounting** → INV-0001 → **Record payment**; the dialog already shows Amount **9630.00**, today's date and Bank transfer; press **Record payment** | Dialog closes, toast "Payment of 9,630.00 THB recorded. INV-0001 is Paid.". Accounting: **No open invoices**, Open Receivables **0.00 THB**. Invoices → INV-0001: badge **Paid**, Balance **0.00 THB**, the Payment listed (date, Bank transfer, 9,630.00 THB, by Fon) |
-| 9 | Anyone | Dashboard | Open invoices **0 invoices · 0.00 THB** (dropped by 9,630.00). Sales today is still **9,630.00 THB** |
+| 9 | Anyone | Dashboard | Open invoices **0 invoices** over **0.00 THB** (two lines) (dropped by 9,630.00). Sales today is still **9,630.00 THB** |
 
 The numbers must agree on every screen. Any screen that disagrees is a bug.
 
@@ -77,7 +77,7 @@ Steps 3 to 6 of the golden path with the failure cases. **Reset the demo data fi
 | 6 | Reload the confirmed order (`/sales-orders/<id>`) | Read-only: no quantity boxes, no Remove, no Change customer, no Cancel order, no Confirm order. The **Open INV-0001** button is there |
 | 7 | In another tab (or with the API) try `POST /api/sales-orders/<id>/confirm` on it again | **409** `"SO-0001 is confirmed and can't be changed"`. No second Invoice, stock still 150 kg. Editing or cancelling it answers 409 the same way |
 | 8 | New order for Brew Lab Ari with **no lines**, Save as Draft | The **Confirm order** button is disabled with the hint "Add at least one product to confirm.". Through the API: `POST .../confirm` answers **409** `"Add at least one line"` |
-| 9 | Dashboard (any role) | Sales today **9,630.00 THB**, Open invoices **1 invoice · 9,630.00 THB**, Stock value **100,700.00 THB**, Low stock **1** (golden-path step 7) |
+| 9 | Dashboard (any role) | Sales today **9,630.00 THB**, Open invoices **1 invoice** over **9,630.00 THB** (two lines), Stock value **100,700.00 THB**, Low stock **1** (golden-path step 7) |
 | 10 | Roles: Lek (Warehouse) and Fon (Accountant) cannot see Sales Orders in their menu. With their tokens `POST /api/sales-orders/<id>/confirm` | **403**. Stock and order status unchanged. Somchai (Admin) can Confirm too |
 | 11 | Phone width (375 px) | Confirm order and Cancel order are full-width buttons; the confirmation dialog fits the screen; no sideways scroll |
 
@@ -92,13 +92,13 @@ Steps 6 to 9 of the golden path with the failure cases. **Reset the demo data fi
 | 1 | As **Nok** (Sales): menu → **Invoices** | One row **INV-0001**, Café Lune, Total **9,630.00 THB**, Balance **9,630.00 THB**, badge **Open** (no Overdue badge). Filter buttons All / Open / Overdue / Paid and a search box. Search `lune` and `INV-0001` both find it; `zzz` shows **"No invoices match 'zzz'"** |
 | 2 | Open **INV-0001** | As golden path step 6. Sales has **no** Record payment button and **no** Accounting item in the menu. Open `/accounting` by its address | **Access denied** page (US-3). Through the API (Sales token): `GET /api/accounting/receivables` and `POST /api/invoices/<id>/payments` both answer **403** |
 | 3 | As **Fon** (Accountant): menu → **Accounting** | Cards: **Open Receivables 9,630.00 THB** (1 open invoice) and **Overdue 0.00 THB**. One row INV-0001 with Due date, Total, Balance and a **Record payment** button. Fon sees the Invoices menu item and can open the Invoice too |
-| 4 | **Record payment** on INV-0001. Change the Amount to **5000**, pick **Cash**, note `Cash at the counter`, press **Record payment** | The line under the Amount first said "Balance after this payment: 4,630.00 THB." Toast "Payment of 5,000.00 THB recorded on INV-0001. Balance 4,630.00 THB.". Accounting: INV-0001 stays, Balance **4,630.00 THB**, Open Receivables **4,630.00 THB**. Dashboard: Open invoices **1 invoice · 4,630.00 THB** |
+| 4 | **Record payment** on INV-0001. Change the Amount to **5000**, pick **Cash**, note `Cash at the counter`, press **Record payment** | The line under the Amount first said "Balance after this payment: 4,630.00 THB." Toast "Payment of 5,000.00 THB recorded on INV-0001. Balance 4,630.00 THB.". Accounting: INV-0001 stays, Balance **4,630.00 THB**, Open Receivables **4,630.00 THB**. Dashboard: Open invoices **1 invoice** over **4,630.00 THB** (two lines) |
 | 5 | **Record payment** again and type **4631** | The dialog shows **"Payment is more than the balance of 4,630.00 THB"** and sends nothing. Through the API the same amount answers **409** with the same message and the Balance stays 4,630.00 |
 | 6 | Try **0**, **-5**, **abc**, **10.001** and an empty Amount | One short message each: "Amount must be greater than 0", "Amount must be a number", "Amount can have at most 2 decimal places", "Amount is required". Nothing is recorded |
 | 7 | Type **4630** (or leave the default, which is the Balance) and press **Record payment** | "Balance after this payment: 0.00 THB. The Invoice will be marked Paid." Toast "Payment of 4,630.00 THB recorded. INV-0001 is Paid." Accounting: **No open invoices**, Open Receivables **0.00 THB** |
 | 8 | Invoices → INV-0001 | Badge **Paid**, "Paid in full" notice, Balance **0.00 THB**, two Payments listed (5,000.00 Cash with the note, 4,630.00 Bank transfer) by Fon. No Record payment button. Invoice list: Balance **0.00 THB**, badge **Paid** |
 | 9 | Through the API as Fon: `POST /api/invoices/<id>/payments` with `{"amount":"1.00","method":"cash"}` on the Paid Invoice | **409** `"INV-0001 is already paid"` and no new Payment |
-| 10 | Dashboard (any role) | Open invoices **0 invoices · 0.00 THB**; Sales today still **9,630.00 THB** |
+| 10 | Dashboard (any role) | Open invoices **0 invoices** over **0.00 THB** (two lines); Sales today still **9,630.00 THB** |
 | 11 | Overdue: no screen can make an old Invoice, so the automated tests cover it. To see it by hand, after a reset and a fresh confirmed order, run in the Supabase SQL editor `update invoices set invoice_date = invoice_date - 45, due_date = due_date - 45;`, reload Accounting, then run `scripts.reset_demo` again | The Invoice shows an **Overdue** badge next to Open and "Overdue by 15 days" (30 days of terms, 45 days old). The Overdue card shows its Balance in red. One due **today** is not Overdue; a Paid one never is. With several Open Invoices the most overdue is first |
 | 12 | Somchai (Admin): Accounting and Invoices both load; he can record a Payment too. Lek (Warehouse): no Invoices or Accounting menu items; `GET /api/invoices` and `GET /api/invoices/<id>` answer **403** | As listed |
 | 13 | Phone width (375 px) as Fon | Accounting cards stack, each Invoice is a card with its own **Record payment** button, the dialog fits the screen (Bank transfer / Cash / Cheque are three big buttons), no sideways scroll. Invoice detail: lines and Payments are cards, Record payment is a full-width button |
@@ -304,11 +304,11 @@ Open `/` (the Dashboard) as any Role. The page says "Good morning/afternoon/even
 | --- | --- | --- | --- |
 | **Sales today (incl. VAT)** | 0.00 THB | 9,630.00 THB | 9,630.00 THB (a Payment never changes Sales Today) |
 | **Low stock** (click: `/products?low_stock=true`) | 1 | 1 | 1 |
-| **Open invoices** (click: Accounting for Admin/Accountant, Invoices for Sales, no link for Warehouse) | 0 invoices · 0.00 THB | 1 invoice · 9,630.00 THB | 0 invoices · 0.00 THB |
+| **Open invoices** (click: Accounting for Admin/Accountant, Invoices for Sales, no link for Warehouse) | 0 invoices over 0.00 THB (two lines) | 1 invoice over 9,630.00 THB (two lines) | 0 invoices over 0.00 THB (two lines) |
 | **Stock value** | 107,100.00 THB | 100,700.00 THB | 100,700.00 THB |
 
 1. Warehouse records a Stock-in of 10 kg ROB-1KG: **Low stock** becomes **0** (45 >= 40) and **Stock value** becomes 109,300.00 THB.
-2. Partial Payment of 5,000.00 THB on INV-0001: **Open invoices** shows **1 invoice · 4,630.00 THB**.
+2. Partial Payment of 5,000.00 THB on INV-0001: **Open invoices** shows **1 invoice** over **4,630.00 THB** (two lines).
 3. Two tabs: keep the Dashboard open in tab A, Confirm an order in tab B, go back to tab A. The numbers update when the tab regains focus, or within 30 seconds, with no reload.
 4. Loading: throttle the network in DevTools and reload; each tile shows a grey skeleton, not a number. Stop the API: an error banner with the API's message and **Try again**.
 5. Phone (DevTools 375 px): tiles in a 2 x 2 grid, no horizontal scroll. Desktop: 4 across.
@@ -316,4 +316,63 @@ Open `/` (the Dashboard) as any Role. The page says "Good morning/afternoon/even
 
 ## 8. Demo rehearsal (7 minutes + 3 Q&A)
 
-_(Filled in by the docs and polish ticket.)_
+The worksheet gives each team 10 minutes: the problem (minute 0 to 1), a live demo on the deployed URL (minute 1 to 7), then Q&A (minute 7 to 10). Hard stop at 10. This script follows that clock and covers the worksheet's demo checklist: US-1 end to end, two Roles on screen, one rule failing, the dashboard changing, US-2 to US-5, and the PDF bonus.
+
+### 8.1 Before your turn (do it 30 minutes before 17:00, off screen)
+
+| # | Do | Check |
+| --- | --- | --- |
+| 1 | `cd backend && uv run python -m scripts.reset_demo` (safe to run twice). Run it **before** your turn, never during | It prints counts only. The next order will be `SO-0001`, the next invoice `INV-0001` |
+| 2 | Open https://fde-project-mini-erp-full-stack.vercel.app once, so the first API call is not a cold start | The login page appears, no error |
+| 3 | **Window A** (normal Chrome window): log in as **Nok** (`nok@siambean.test`). Leave it on the Dashboard | The header shows **Nok** and a **Sales** badge. Dashboard: Sales today **0.00 THB**, Low stock **1**, Open invoices **0 invoices** over **0.00 THB**, Stock value **107,100.00 THB** |
+| 4 | **Window B** (a Chrome **Incognito** window, because a browser keeps only one login per site): log in as **Fon** (`fon@siambean.test`). Leave it on the Dashboard | The header shows **Fon** and an **Accountant** badge. Same four numbers as above |
+| 5 | **Terminal** at the repo root with Lek's token ready (it lasts 1 hour, so do this within the hour before you present). Use the commands in section 3.1 with `lek@siambean.test`, store the result in `TOKEN_LEK`, set `BASE=https://fde-project-mini-erp-full-stack.vercel.app`, then `clear` so nothing secret is on screen | `echo ${#TOKEN_LEK}` prints a number above 100 (never print the token itself) |
+| 6 | Phone: open the URL once on mobile data (not your Wi-Fi) | The login page loads |
+| 7 | Backup: a screen recording of the full run (section 8.2) and screenshots of INV-0001, the dashboard after payment and the 403, saved on the desktop | The files open |
+| 8 | Browser zoom 125 %, notifications off, bookmarks bar hidden | Text is readable from the back of the room |
+
+### 8.2 The script (7 minutes)
+
+Money is always `9,630.00 THB`, stock always has its unit (`150 kg`). Say each number out loud when it appears.
+
+| Time | Who (window) | Do (exact clicks) | Expected on screen | Say | If it breaks |
+| --- | --- | --- | --- | --- | --- |
+| 0:00 to 1:00 | Window A, Dashboard | Nothing to click. Talk over the Dashboard | Four tiles: Sales today **0.00 THB**, Low stock **1**, Open invoices **0 invoices** over **0.00 THB**, Stock value **107,100.00 THB** | Siam Bean sells 1 kg bags to about 80 cafés. Five pains: wrong stock, slow invoices, who owes money, promising beans we don't have, anyone can change anything. This is one system with a Role for every person | Open the README (problem table at the top) and talk from it |
+| 1:00 to 1:40 | **Nok** (Sales), A | Click the **Low stock** tile, then menu **Products** | The tile opens Products filtered to **ROB-1KG** with a **Low stock** badge (35 kg is below its reorder level of 40, US-2). On **Products** (all) ARB-1KG shows **170 kg** | "Stock is computed from stock movements. Nobody types a stock number" | Skip the tile click and show **Products** only |
+| 1:40 to 2:30 | Nok, A | Menu **Sales Orders** (the empty list says "No sales orders yet"), then **New order**. In **1. Customer** type `lune` and click **Café Lune**. In **2. Products** click **ARB-1KG**, type `200` in Quantity, press **Add to order** | A Café Lune card with Tax ID `0105561000011`. One line: `ARB-1KG`, **450.00 THB per kg**, **200 kg**, with the amber warning **"Only 170 kg on hand"**. The unit price cannot be edited | "Sales sometimes promise beans we don't have. The screen only warns, the server decides" | If the list is empty, reload and retry. If the app is down, go to 8.3 |
+| 2:30 to 2:50 | Nok, A | Click **Save as Draft** | Order **SO-0001**, badge **Draft**, toast "SO-0001 saved as a Draft". The address ends `/sales-orders/<id>`: **remember that number** for the 403 step | "SO-0001 comes from a counter in the database, never typed" | If the number is not `SO-0001`, the reset was skipped. Carry on and say the numbers as they appear |
+| 2:50 to 3:30 | Nok, A | Click **Confirm order** (top right), read the dialog **"Confirm SO-0001?"**, click **Confirm order** inside it | The dialog stays open with a red message **"Not enough stock for ARB-1KG"**. Click **Go back**: the order is still **Draft**. (Optional, in the menu **Products**: ARB-1KG still **170 kg**.) | "Confirm is one database function. It failed, so nothing changed: no stock out, no invoice, no number used" | If the message differs, read it aloud and show Products still at 170 kg |
+| 3:30 to 4:20 | Nok, A | Back on SO-0001, type `20` in the quantity box and press **Tab**. Click **Confirm order**, then **Confirm order** in the dialog | Before confirming: line **9,000.00 THB**, Subtotal **9,000.00 THB**, VAT 7% **630.00 THB**, Total **9,630.00 THB**. After: toast "SO-0001 confirmed. Invoice INV-0001 issued.", badge **Confirmed**, button **Open INV-0001** | "9,000 plus 7% VAT of 630 is 9,630. Stock and invoice were written in one transaction" | If confirm fails for another reason, read the message, reload once, and switch to the backup recording |
+| 4:20 to 4:50 | Nok, A | Click **Open INV-0001**, point at the lines and totals, click **Download PDF** | **INV-0001**, badge **Open**, Customer Café Lune with Tax ID `0105561000011`, ARB-1KG 20 kg x 450.00 THB, Subtotal **9,000.00 THB**, VAT 7% **630.00 THB**, Total **9,630.00 THB**, Due date = invoice date + **30 days**, Balance **9,630.00 THB**, "No payments yet". The button shows "Preparing PDF..." and the browser saves **INV-0001.pdf** (open it from the downloads bar: Siam Bean Co., BILL TO Café Lune, same totals) | "Bonus: a PDF invoice. The price was copied onto the line, so a later price change never touches it" | If the PDF fails, a red banner says why. Show the PDF from the backup screenshots |
+| 4:50 to 5:10 | Nok, A | In the address bar change the path to `/accounting` | **Access denied**: "You do not have access to this page", "Accounting is only open to Admin and Accountant. You are logged in as Sales." (US-3). The menu has no Accounting item | "The menu hides it, but the server enforces it too: the API answers 403" | If a blank page shows, press **Reload page**. Otherwise show the menu without Accounting |
+| 5:10 to 6:00 | **Fon** (Accountant), B | Switch to Window B (the Dashboard refreshes when the window gets focus). Click the **Open invoices** tile (it opens Accounting). Click **Record payment** on INV-0001 | Dashboard: Open invoices **1 invoice** over **9,630.00 THB**, Stock value **100,700.00 THB**, Sales today **9,630.00 THB**. Accounting: Open Receivables **9,630.00 THB**, Overdue **0.00 THB**. The dialog "Record payment for INV-0001" has Amount **9630.00**, today's date, **Bank transfer**, and "Balance after this payment: 0.00 THB. The Invoice will be marked Paid." | "Fon is the Accountant. She sees who owes money. Sales could not open this screen" | If the row is missing, reload Accounting. If it is still missing, the confirm did not finish: go back to Window A |
+| 6:00 to 6:25 | Fon, B | Click **Record payment** in the dialog. Then menu **Dashboard** | Toast "Payment of 9,630.00 THB recorded. INV-0001 is Paid.". Accounting: **No open invoices**, Open Receivables **0.00 THB**. Dashboard: Sales today **9,630.00 THB**, Low stock **1**, Open invoices **0 invoices** over **0.00 THB**, Stock value **100,700.00 THB** (was 107,100.00 THB) | "Receivables dropped by 9,630. Stock value dropped by 6,400, which is 20 kg at the 320 THB cost. Every screen agrees" | If the Dashboard looks stale, reload it. The 30-second auto refresh also catches up |
+| 6:25 to 6:45 | **Lek** (Warehouse), terminal | Run `curl -i -X POST $BASE/api/sales-orders/<id>/confirm -H "Authorization: Bearer $TOKEN_LEK"` with the order number noted at 2:30 | `403` (`HTTP/2 403`) and `{"detail":"Your role (warehouse) is not allowed to do this."}` (US-3) | "A Warehouse user cannot confirm an order, even by calling the API directly" | A `401` means the token expired: show the 403 from the backup screenshot |
+| 6:45 to 7:00 | Nok, A | Menu **Customers**. In **Search customers** type `lune`, then clear it | Before: pager **1-20 of 200**. About 0.3 s after typing: **Café Lune** only, **1-1 of 1** (US-5). Clearing returns 20 rows | "200 customers, 20 per page, filtered in well under a second. Every rule here has a test that was red before it was green" | Skip it if over time (8.4) |
+| 7:00 | Stop | Stop clicking | | "Questions?" | |
+
+### 8.3 If the whole app is down
+
+1. Reload once. A blank page with a **Reload page** button means a new version was just deployed: wait 20 seconds and reload. Check the API separately: `curl -i https://fde-project-mini-erp-full-stack.vercel.app/api/me` must answer 401 (no token), not a 5xx.
+2. Still down: play the backup recording and narrate the same script, then show the repository: the README (US-1 to US-5 table), `docs/er-diagram.md`, `GLOSSARY.md`, the tickets, and `uv run pytest -q` in a terminal.
+3. Data went wrong mid-demo (a number is not `SO-0001`): do **not** reset on stage. Say the numbers as they are and finish.
+
+### 8.4 If you are running over, drop in this order
+
+1. US-5 search (6:45 to 7:00).
+2. Download PDF (keep **Open INV-0001**).
+3. The **Low stock** tile click (1:00 to 1:40): mention it while on the Dashboard.
+4. The Access denied screen (4:50 to 5:10). Keep the Lek `curl`: it is the worksheet's own example.
+
+Never drop: the failed confirm (2:50 to 3:30), INV-0001 with 9,630.00 THB, the payment, and the final Dashboard.
+
+### 8.5 Q&A cheat sheet (minute 7 to 10)
+
+| They ask | Show |
+| --- | --- |
+| Where is "stock never below zero" enforced? | A database trigger on `stock_movements` and the `confirm_sales_order` function (`supabase/migrations/`, ADR-0002). Not only the screen |
+| Where do `SO-0001` and `INV-0001` come from? | The `doc_counters` table, inside the same transaction (ADR-0003) |
+| How do you know the roles work? | `cd backend && uv run pytest -q`: the suite creates a throwaway `TEST-<runid>` company with four role users, then deletes them. Section 3.3 of this manual is the matrix |
+| Were the tests written first? | The git history: red commits (with the failing pytest output in the body) come before the green ones |
+| Who did what? | README, "Who did what" |
+| Are secrets safe? | Only the Supabase URL and the publishable key reach the browser (`npm run check:bundle`). `.env` is git-ignored |
