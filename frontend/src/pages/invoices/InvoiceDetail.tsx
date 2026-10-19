@@ -15,6 +15,7 @@ import { formatDate, formatQty, formatTHB } from '@/lib/format'
 import { canAccess, canRecordPayments } from '@/lib/permissions'
 import { methodLabel } from '@/pages/accounting/payment'
 import { PaymentDialog } from '@/pages/accounting/PaymentDialog'
+import { DownloadPdfButton } from './DownloadPdfButton'
 import { overdueLabel, invoiceKey, type InvoiceDetail as Invoice, type InvoiceLine, type Payment } from './helpers'
 import { InvoiceStatusBadges } from './InvoiceStatusBadges'
 import { InvoiceTotals } from './InvoiceTotals'
@@ -110,12 +111,15 @@ export function InvoiceDetail() {
         title={inv.number}
         description={<InvoiceStatusBadges invoice={inv} />}
         action={
-          canPay ? (
-            <Button type="button" size="lg" onClick={() => setPaying(true)}>
-              <HandCoins aria-hidden="true" />
-              Record payment
-            </Button>
-          ) : null
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <DownloadPdfButton invoiceId={inv.id} number={inv.number} />
+            {canPay ? (
+              <Button type="button" size="lg" onClick={() => setPaying(true)}>
+                <HandCoins aria-hidden="true" />
+                Record payment
+              </Button>
+            ) : null}
+          </div>
         }
       />
 
