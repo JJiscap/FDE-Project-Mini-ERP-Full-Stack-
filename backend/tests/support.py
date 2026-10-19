@@ -15,6 +15,7 @@ import httpx
 import psycopg
 
 from app.core.config import get_settings
+from scripts.demo_data import load_master_data
 
 # One id per pytest process. Company names and emails carry it, so runs
 # started at the same time by parallel agents never collide.
@@ -38,11 +39,11 @@ _TIMEOUT = 30.0
 # ---------------------------------------------------------------- companies
 
 
-def create_test_company(conn: psycopg.Connection, label: str) -> int:
-    """Insert a company named `TEST-<runid>-<label>` and return its id."""
+def create_test_company(conn: psycopg.Connection, label: str | None = None) -> int:
+    """Insert a company named `TEST-<runid>` (or `TEST-<runid>-<label>`); return its id."""
+    name = f"TEST-{RUN_ID}" if label is None else f"TEST-{RUN_ID}-{label}"
     row = conn.execute(
-        "insert into public.companies (name) values (%s) returning id",
-        (f"TEST-{RUN_ID}-{label}",),
+        "insert into public.companies (name) values (%s) returning id", (name,)
     ).fetchone()
     return row["id"]
 
@@ -62,9 +63,23 @@ def _require_test_company(conn: psycopg.Connection, company_id: int) -> None:
 def clear_company_data(conn: psycopg.Connection, company_id: int) -> None:
     """Delete every business row of a TEST-* company (users and the company stay)."""
     _require_test_company(conn, company_id)
-    with conn.transaction():
-        for table in _CLEAR_ORDER:
-            conn.execute(f"delete from public.{table} where company_id = %s", (company_id,))
+    # One round trip: several statements in a single simple query (no parameters,
+    # the id is an int), atomic because a multi-statement query is one transaction.
+    cid = int(company_id)
+    conn.execute(
+        "; ".join(f"delete from public.{table} where company_id = {cid}" for table in _CLEAR_ORDER)
+    )
+
+
+def reset_company(conn: psycopg.Connection, company_id: int) -> None:
+    """Put a TEST-* company back to the clean starting state every API test assumes.
+
+    The 4 sample products with their Opening Stock (ARB-1KG 170, ROB-1KG 35,
+    BLD-1KG 90, DRP-10 240) and the 3 sample customers. No orders, invoices,
+    payments, other movements or document counters. Users are left alone.
+    """
+    clear_company_data(conn, company_id)
+    load_master_data(conn, company_id, total_customers=3)
 
 
 def drop_company(conn: psycopg.Connection, company_id: int) -> None:
