@@ -59,3 +59,20 @@ Claude does everything else. Tick each box when it's done. Run commands prefixed
 ## Found while building (Wave 4, invoices and payments)
 
 - [ ] **15. Click through Invoices, Accounting and Record payment once in a real browser.** The agent could not log in, so these screens are verified only by typecheck, screen tests (jsdom), the API tests and build. After `scripts.reset_demo` and confirming the Café Lune order as Nok, follow `testing-manual.md` section 1c as Nok (Invoices, no Record payment button, `/accounting` shows Access denied) and as Fon (Accounting, the payment dialog, partial then full payment), at desktop width and at 375 px (cards stack, dialog fits, no sideways scroll). Run `scripts.reset_demo` again afterwards so the demo starts clean.
+
+## Class 4 slides (Tue 20 to Wed 21 Oct)
+
+- [ ] **16. Build the slides in Claude Design.** The brief is `docs/presentation/slide-brief.md` (13 slides: 6 main, 6 appendix, 1 hidden backup).
+  1. Open claude.ai, then Design, and start a new slide deck.
+  2. Paste the text between `===== PASTE FROM HERE =====` and `===== PASTE UNTIL HERE =====`.
+  3. Attach `docs/er-diagram.md` and every PNG in `docs/presentation/shots/` (it is fine if some are missing).
+  4. Generate, then export **.pptx and PDF**. Save both in `docs/presentation/`.
+  5. Tell Claude Code "slides exported". It checks every figure against its source.
+  - Do this after you decide item 14a (above) if you want the real screenshots in one pass. If you cannot wait, build once without the shots, then re-run step 3 to 4 with them.
+- [ ] **17. Screenshot run on production (needs your decision from 14a).** Claude drives Chrome through the demo script (`testing-manual.md` §8.2), saves the PNGs listed in the brief to `docs/presentation/shots/`, then runs `reset_demo`.
+  - You log in (Claude does not type passwords on production): first as Nok in the Claude tab group, then as Fon in an Incognito window when asked.
+  - If macOS blocks the screen capture, give your terminal app Screen Recording permission (System Settings, Privacy and Security), or press ⌘⇧4 when Claude asks and Claude names the files.
+  - Afterwards check that the Dashboard is back to Sales today 0.00 THB, Low stock 1, Open invoices 0, Stock value 107,100.00 THB.
+- [ ] **18. Phone screenshot.** On your phone, on mobile data (Wi-Fi off), open the production URL, log in as Sales, open the Dashboard, and take a screenshot. AirDrop it to the Mac and save it as `docs/presentation/shots/10-phone-dashboard.png`. This also closes item 6.
+- [ ] **19. Rehearse with the deck and a timer.** Slides 1 to 5 in under 60 seconds, then the swap to Window A, then the §8.2 script. Record the backup video while you do it (item 8).
+- [ ] **20. Merge before Wednesday evening.** Ask Claude to merge `docs/presentation` into `main` and check the live URL. A push to `main` redeploys, so nothing merges on Thursday.

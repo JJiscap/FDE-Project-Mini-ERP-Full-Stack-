@@ -151,4 +151,4 @@ Counts as of 20 Oct 2026, taken from running the suites on the final branch: 459
 
 ## Who did what
 
-Solo build by Vuttipat Vachung-ngoen (GitHub: JJiscap). The work was orchestrated with Claude: Claude planned and reviewed, and Sonnet subagents implemented one ticket each on its own feature branch. Every ticket and its progress notes are in [`.scratch/mini-erp/issues/`](.scratch/mini-erp/issues/).
+This is a group project. The code was written with Claude as the coding agent: Claude planned and reviewed, and Sonnet subagents implemented one ticket each on its own feature branch. Every ticket and its progress notes are in [`.scratch/mini-erp/issues/`](.scratch/mini-erp/issues/).
