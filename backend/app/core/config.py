@@ -28,7 +28,7 @@ class ConfigError(RuntimeError):
 def _require(name: str) -> str:
     value = os.environ.get(name, "").strip()
     if not value:
-        raise ConfigError(f"Environment variable {name} is not set. See .env.example.")
+        raise ConfigError(f"Environment variable {name} is not set. See README.md (Setup).")
     return value
 
 
@@ -46,7 +46,7 @@ def _database_url(supabase_url: str) -> str:
     if not password:
         raise ConfigError(
             "Set DATABASE_URL (Supabase transaction pooler URI) or POSTGRES_PASSWORD. "
-            "See .env.example."
+            "See README.md (Setup)."
         )
     project_ref = (urlparse(supabase_url).hostname or "").split(".")[0]
     return make_conninfo(

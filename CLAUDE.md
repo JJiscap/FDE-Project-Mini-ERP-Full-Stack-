@@ -102,7 +102,7 @@ Drop tool output, file contents and diffs; they can be re-read from disk.
 
 ## Secrets
 
-- `.env` lives at the repo root and is git-ignored. `.env.example` holds names only. Never print, paste or commit key values, not even prefixes.
+- `.env` lives at the repo root and is git-ignored. No env file of any kind is committed; the variable names are listed in README (Setup). Never print, paste or commit key values, not even prefixes.
 
 ## Definition of done (per ticket)
 
