@@ -92,7 +92,7 @@ All five stories and the bonus are done and live. How to see each one on screen 
 
 You need Python 3.12+ with [`uv`](https://docs.astral.sh/uv/), a recent Node.js (built on Node 25) and a Supabase project.
 
-1. **Environment.** Copy `.env.example` to `.env` at the repo root (it is git-ignored) and fill in these names from your Supabase dashboard. Never commit values.
+1. **Environment.** Create `.env` at the repo root (it is git-ignored) with these names, filled in from your Supabase dashboard. Never commit values.
    - `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `SUPABASE_JWKS_URL`
    - `DATABASE_URL` (transaction pooler, port 6543), `POSTGRES_PASSWORD`
    - `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF` (dev tooling only, not read by the app)

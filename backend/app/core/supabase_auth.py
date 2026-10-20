@@ -17,7 +17,7 @@ _TIMEOUT = 30.0
 def _admin(method: str, path: str, **kwargs) -> httpx.Response:
     settings = get_settings()
     if not settings.supabase_secret_key:
-        raise ConfigError("Environment variable SUPABASE_SECRET_KEY is not set. See .env.example.")
+        raise ConfigError("Environment variable SUPABASE_SECRET_KEY is not set. See README.md (Setup).")
     response = httpx.request(
         method,
         f"{settings.supabase_url}/auth/v1/admin{path}",
