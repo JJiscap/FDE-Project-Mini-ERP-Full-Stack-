@@ -4,7 +4,6 @@ For Thu 22 Oct 2026, 17:00. 10 minutes, hard stop: 1 min problem, 6 min live dem
 
 ## How to use this file
 
-0. **Fill in the team first.** Replace every `{{...}}` marker below (slides 1 and 10, and the slide 10 notes) with the real team name, member names and who did what. Also the presenter line in "The project". Design would print the markers literally.
 1. Open claude.ai, then Design. Start a new slide deck.
 2. Copy everything between `===== PASTE FROM HERE =====` and `===== PASTE UNTIL HERE =====` into the prompt.
 3. Attach: `docs/er-diagram.md`, and every PNG in `docs/presentation/shots/` that exists (names are listed at the end). Missing shots are fine: the prompt tells Design to leave a labelled empty frame.
@@ -19,7 +18,7 @@ Create a 13-slide, 16:9 presentation for a 10-minute university project demo, wi
 
 ## The project
 
-"Siam Bean Co. Mini ERP" is a small web ERP for a fictional Bangkok coffee-bean distributor (about 80 cafés, 5 staff). Built by a team: {{TEAM NAME}}, {{MEMBER NAMES}}. Every member speaks once. Course: CU FDE3, Class 4, Thu 22 Oct 2026. Live URL: fde-project-mini-erp-full-stack.vercel.app
+"Siam Bean Co. Mini ERP" is a small web ERP for a fictional Bangkok coffee-bean distributor (about 80 cafés, 5 staff). It is a group project; do not name the group or its members anywhere on the slides. Course: CU FDE3, Class 4, Thu 22 Oct 2026. Live URL: fde-project-mini-erp-full-stack.vercel.app
 
 ## Design direction (match the product)
 
@@ -36,7 +35,7 @@ Create a 13-slide, 16:9 presentation for a 10-minute university project demo, wi
 
 - Title: Siam Bean Co. Mini ERP
 - Tagline: One order in. Stock, invoice and dashboard agree.
-- Line: CU FDE3 · Class 4 · Thu 22 Oct 2026 · Team {{TEAM NAME}}: {{MEMBER NAMES}}
+- Line: CU FDE3 · Class 4 · Thu 22 Oct 2026 · Group project
 - URL, large, monospace: fde-project-mini-erp-full-stack.vercel.app
 - Notes: "I built a Mini ERP for Siam Bean Co., a coffee-bean distributor in Bangkok. It's live at this address and I'll use it for the whole demo."
 
@@ -160,8 +159,8 @@ Create a 13-slide, 16:9 presentation for a 10-minute university project demo, wi
   - Confirm order began with 44 backend and 5 screen tests failing, before any code
   - 100+ commits, one feature branch per ticket
   - Tests run on the hosted database in a throwaway TEST company, never on the demo data
-- A plain line at the bottom: Team {{TEAM NAME}}: {{MEMBERS AND ROLES, e.g. "Name: product and docs · Name: testing · Vuttipat Vachung-ngoen: code and deployment"}}. The code was built with Claude as the coding agent: Sonnet subagents wrote one ticket each; every branch was tested and reviewed before it merged.
-- Notes: "Every ticket started with failing tests, and the failing output is in the commit message. Confirm order began with 44 backend and 5 screen tests red. Our team split the work like this: {{WHO DID WHAT, one sentence}}. The code was written with Claude as the coding agent: one subagent per ticket, and every branch was tested and reviewed before it merged."
+- A plain line at the bottom: Group project. The code was built with Claude as the coding agent: Sonnet subagents wrote one ticket each; every branch was tested and reviewed before it merged.
+- Notes: "Every ticket started with failing tests, and the failing output is in the commit message. Confirm order began with 44 backend and 5 screen tests red. This was a group project. The code was written with Claude as the coding agent: one subagent per ticket, and every branch was tested and reviewed before it merged."
 
 ## Slide 11: Decisions on record (Appendix)
 
