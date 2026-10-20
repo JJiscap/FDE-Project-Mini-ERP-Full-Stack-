@@ -37,7 +37,7 @@ Create a 13-slide, 16:9 presentation for a 10-minute university project demo, wi
 - Tagline: One order in. Stock, invoice and dashboard agree.
 - Line: CU FDE3 · Class 4 · Thu 22 Oct 2026 · Group project
 - URL, large, monospace: fde-project-mini-erp-full-stack.vercel.app
-- Notes: "I built a Mini ERP for Siam Bean Co., a coffee-bean distributor in Bangkok. It's live at this address and I'll use it for the whole demo."
+- Notes: "We built a Mini ERP for Siam Bean Co., a coffee-bean distributor in Bangkok. It's live at this address and we'll use it for the whole demo."
 
 ## Slide 2: The problem
 
@@ -78,7 +78,7 @@ Create a 13-slide, 16:9 presentation for a 10-minute university project demo, wi
   6. Dashboard → Open Invoices 0.00 THB · Stock Value 100,700.00 THB
 - Extra chip, set apart in red: [Lek · Warehouse] calls Confirm directly → 403
 - Footer: ▶ Live demo · fde-project-mini-erp-full-stack.vercel.app
-- Notes: "Here's the story I'll run live. Nok in Sales creates and confirms the order, Fon in Accounting records the payment, and I'll show Lek in the warehouse being refused. Switching to the live app now."
+- Notes: "Here's the story we'll run live. Nok in Sales creates and confirms the order, Fon in Accounting records the payment, and we'll show Lek in the warehouse being refused. Switching to the live app now."
 
 ## Slide 6: Closing (stays on screen during Q&A)
 
@@ -93,7 +93,7 @@ Create a 13-slide, 16:9 presentation for a 10-minute university project demo, wi
 - Three small proof tiles: 459 backend + 180 frontend tests · Tests written first · Rules enforced on the server
 - Right side: three screenshots, small: `06-invoice-inv-0001.png`, `08-dashboard-after-payment.png`, and `10-phone-dashboard.png` inside a simple phone frame.
 - Footer: fde-project-mini-erp-full-stack.vercel.app · github.com/JJiscap/FDE-Project-Mini-ERP-Full-Stack- · "Questions?"
-- Notes: "Every user story from the brief is done and works on the live URL, plus the PDF invoice as a bonus. I'm happy to show the code, the tests or the data behind any screen."
+- Notes: "Every user story from the brief is done and works on the live URL, plus the PDF invoice as a bonus. We're happy to show the code, the tests or the data behind any screen."
 
 ## Slide 7: ER diagram (Appendix)
 

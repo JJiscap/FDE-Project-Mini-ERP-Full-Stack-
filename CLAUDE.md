@@ -1,6 +1,6 @@
 # Siam Bean Co. Mini ERP
 
-Course project CU FDE3. Demo: Thu 22 Oct 2026, 17:00, on the deployed URL. Solo build, orchestrated by Claude.
+Course project CU FDE3. Demo: Thu 22 Oct 2026, 17:00, on the deployed URL. Group project, orchestrated by Claude.
 
 ## Sources of truth (read before working)
 
