@@ -330,6 +330,7 @@ The worksheet gives each team 10 minutes: the problem (minute 0 to 1), a live de
 | 6 | Phone: open the URL once on mobile data (not your Wi-Fi) | The login page loads |
 | 7 | Backup: a screen recording of the full run (section 8.2) and screenshots of INV-0001, the dashboard after payment and the 403, saved on the desktop | The files open |
 | 8 | Browser zoom 125 %, notifications off, bookmarks bar hidden | Text is readable from the back of the room |
+| 9 | Deck: open the exported PDF (or `.pptx`) from `docs/presentation/` in its own window, full screen, on slide 1. Practise the swap deck window to Window A once | The swap takes under 3 seconds. Slides 7 to 13 are the appendix: slide 13 is the hidden backup |
 
 ### 8.2 The script (7 minutes)
 
@@ -337,7 +338,7 @@ Money is always `9,630.00 THB`, stock always has its unit (`150 kg`). Say each n
 
 | Time | Who (window) | Do (exact clicks) | Expected on screen | Say | If it breaks |
 | --- | --- | --- | --- | --- | --- |
-| 0:00 to 1:00 | Window A, Dashboard | Nothing to click. Talk over the Dashboard | Four tiles: Sales today **0.00 THB**, Low stock **1**, Open invoices **0 invoices** over **0.00 THB**, Stock value **107,100.00 THB** | Siam Bean sells 1 kg bags to about 80 cafés. Five pains: wrong stock, slow invoices, who owes money, promising beans we don't have, anyone can change anything. This is one system with a Role for every person | Open the README (problem table at the top) and talk from it |
+| 0:00 to 1:00 | Deck window, slides 1 to 5 (`docs/presentation/slide-brief.md`) | Press the right arrow to advance: slide 1 title (5 s), slide 2 the five pains (30 s), slide 3 why an ERP (12 s), slide 4 architecture (8 s), slide 5 the roadmap (5 s). At about 0:55 switch to Window A | Window A on the Dashboard with four tiles: Sales today **0.00 THB**, Low stock **1**, Open invoices **0 invoices** over **0.00 THB**, Stock value **107,100.00 THB** | The slides' speaker notes. On the Dashboard: "These are the before numbers: nothing sold today, one product low, nobody owes us, stock worth 107,100.00 THB" | Past 1:10 when you reach slide 5: flip slides 3 and 4 without talking. Deck will not open: talk over the Dashboard from the README problem table |
 | 1:00 to 1:40 | **Nok** (Sales), A | Click the **Low stock** tile, then menu **Products** | The tile opens Products filtered to **ROB-1KG** with a **Low stock** badge (35 kg is below its reorder level of 40, US-2). On **Products** (all) ARB-1KG shows **170 kg** | "Stock is computed from stock movements. Nobody types a stock number" | Skip the tile click and show **Products** only |
 | 1:40 to 2:30 | Nok, A | Menu **Sales Orders** (the empty list says "No sales orders yet"), then **New order**. In **1. Customer** type `lune` and click **Café Lune**. In **2. Products** click **ARB-1KG**, type `200` in Quantity, press **Add to order** | A Café Lune card with Tax ID `0105561000011`. One line: `ARB-1KG`, **450.00 THB per kg**, **200 kg**, with the amber warning **"Only 170 kg on hand"**. The unit price cannot be edited | "Sales sometimes promise beans we don't have. The screen only warns, the server decides" | If the list is empty, reload and retry. If the app is down, go to 8.3 |
 | 2:30 to 2:50 | Nok, A | Click **Save as Draft** | Order **SO-0001**, badge **Draft**, toast "SO-0001 saved as a Draft". The address ends `/sales-orders/<id>`: **remember that number** for the 403 step | "SO-0001 comes from a counter in the database, never typed" | If the number is not `SO-0001`, the reset was skipped. Carry on and say the numbers as they appear |
@@ -376,3 +377,5 @@ Never drop: the failed confirm (2:50 to 3:30), INV-0001 with 9,630.00 THB, the p
 | Were the tests written first? | The git history: red commits (with the failing pytest output in the body) come before the green ones |
 | Who did what? | README, "Who did what" |
 | Are secrets safe? | Only the Supabase URL and the publishable key reach the browser (`npm run check:bundle`). `.env` is git-ignored |
+
+Appendix slides to jump to (the deck's slide numbers): 7 ER diagram · 8 where the rules live · 9 roles and the `403` · 10 how it was built (tests first) · 11 decisions (ADRs) · 12 what is not built. Slide 6 (the user stories, all Done) stays on screen during Q&A.
